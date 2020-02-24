@@ -23,7 +23,8 @@ import com.eis.smsnetwork.smsnetcommands.SMSAddResource;
 import com.eis.smsnetwork.smsnetcommands.SMSSendInvitation;
 import com.eis.smsnetwork.smsnetcommands.SMSRemoveResource;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The manager class of the network.
@@ -36,7 +37,7 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
 
     private NetSubscriberList<SMSPeer> netSubscribers = new SMSNetSubscriberList();
     private NetDictionary<String, String> netDictionary = new SMSNetDictionary();
-    private ArrayList<SMSPeer> invitedPeers = new ArrayList<SMSPeer>();
+    private Set<SMSPeer> invitedPeers = new HashSet<>();
 
     private String LOG_KEY = "NET_MANAGER";
 
@@ -55,10 +56,10 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     }
 
     /**
-     * @return A {@link NetSubscriberList} containing Peers who were invited to join the network and
-     * haven't answered yet.
+     * @return A {@link Set} containing Peers who were invited to join the network and haven't
+     * answered yet.
      */
-    public ArrayList<SMSPeer> getInvitedPeers() {
+    public Set<SMSPeer> getInvitedPeers() {
         return invitedPeers;
     }
 
@@ -73,7 +74,8 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * @author Marco Cognolato
      */
     @Override
-    public void setResource(String key, String value, SetResourceListener<String, String, SMSFailReason> setResourceListener) {
+    public void setResource(String key, String value, SetResourceListener<String, String,
+            SMSFailReason> setResourceListener) {
         try {
             CommandExecutor.execute(new SMSAddResource(key, value, netDictionary));
         } catch (Exception e) {
@@ -93,7 +95,8 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * @author Marco Cognolato
      */
     @Override
-    public void getResource(String key, GetResourceListener<String, String, SMSFailReason> getResourceListener) {
+    public void getResource(String key,
+                            GetResourceListener<String, String, SMSFailReason> getResourceListener) {
         String resource = netDictionary.getResource(key);
         if (resource != null) getResourceListener.onGetResource(key, resource);
         else {
@@ -110,7 +113,8 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * @author Marco Cognolato
      */
     @Override
-    public void removeResource(String key, RemoveResourceListener<String, SMSFailReason> removeResourceListener) {
+    public void removeResource(String key,
+                               RemoveResourceListener<String, SMSFailReason> removeResourceListener) {
         try {
             CommandExecutor.execute(new SMSRemoveResource(key, netDictionary));
         } catch (Exception e) {

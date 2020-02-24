@@ -2,7 +2,6 @@ package com.eis.smsnetwork.broadcast;
 
 import android.util.Log;
 
-import com.eis.communication.network.NetSubscriberList;
 import com.eis.communication.network.commands.CommandExecutor;
 import com.eis.smslibrary.SMSManager;
 import com.eis.smsnetwork.RequestType;
@@ -16,7 +15,7 @@ import com.eis.smsnetwork.SMSNetDictionary;
 import com.eis.smsnetwork.SMSNetSubscriberList;
 import com.eis.smsnetwork.smsnetcommands.SMSAddPeer;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * @author Marco Cognolato, Giovanni Velludo, Enrico Cestaro
@@ -78,7 +77,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
             case AcceptInvitation: {
                 if (fields.length > 1) return;
                 //Verifying if the sender has been invited to join the network
-                ArrayList<SMSPeer> invitedPeers = SMSJoinableNetManager.getInstance()
+                Set<SMSPeer> invitedPeers = SMSJoinableNetManager.getInstance()
                         .getInvitedPeers();
                 if (!invitedPeers.contains(sender))
                     return;
