@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static com.eis.smsnetwork.broadcast.BroadcastReceiver.FIELD_SEPARATOR;
 
 /**
  * @author Giovanni Velludo
@@ -47,21 +48,26 @@ public class BroadcastReceiverTest {
     }
 
     @Test
-    public void splitMessage() {
-        String message = "è¤saluto¤buon\\¤giorno¤albero¤pino\\¤marittimo\\¤";
-        String[] expectedFields0 = {"è", "saluto", "buon\\¤giorno", "albero", "pino\\¤marittimo\\¤"};
+    public void separatorRegex() {
+        String message = "è" + FIELD_SEPARATOR + "greeting" + FIELD_SEPARATOR + "howdily\\" +
+                FIELD_SEPARATOR + "doodily" + FIELD_SEPARATOR + "tree" + FIELD_SEPARATOR + "pinus\\"
+                + FIELD_SEPARATOR + "pinaster\\" + FIELD_SEPARATOR;
+        String[] expectedFields = {"è", "greeting", "howdily\\" + FIELD_SEPARATOR + "doodily",
+                "tree", "pinus" + "\\" + FIELD_SEPARATOR + "pinaster\\" + FIELD_SEPARATOR};
         String[] fields = message.split(BroadcastReceiver.SEPARATOR_REGEX);
-        Assert.assertArrayEquals(expectedFields0, fields);
+        Assert.assertArrayEquals(expectedFields, fields);
 
-        message = "\\¤\\¤¤\\ciao";
-        String[] expectedFields1 = {"\\¤\\¤", "\\ciao"};
+        message = "\\" + FIELD_SEPARATOR + "\\" + FIELD_SEPARATOR + FIELD_SEPARATOR + "\\hello";
+        expectedFields = new String[]{"\\" + FIELD_SEPARATOR + "\\" + FIELD_SEPARATOR, "\\hello"};
         fields = message.split(BroadcastReceiver.SEPARATOR_REGEX);
-        Assert.assertArrayEquals(expectedFields1, fields);
+        Assert.assertArrayEquals(expectedFields, fields);
 
-        message = "parola¤\\\\¤parola¤\\¤parola";
-        String[] expectedFields2 = {"parola", "\\\\¤parola", "\\¤parola"};
+        message = "word" + FIELD_SEPARATOR + "\\\\" + FIELD_SEPARATOR + "word" + FIELD_SEPARATOR +
+                "\\" + FIELD_SEPARATOR + "word";
+        expectedFields = new String[]{"word", "\\\\" + FIELD_SEPARATOR + "word",
+                "\\" + FIELD_SEPARATOR + "word"};
         fields = message.split(BroadcastReceiver.SEPARATOR_REGEX);
-        Assert.assertArrayEquals(expectedFields2, fields);
+        Assert.assertArrayEquals(expectedFields, fields);
     }
 
     @Test
@@ -166,7 +172,8 @@ public class BroadcastReceiverTest {
     public void onMessageReceived_addPeerFromNonSubscriber_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String garbageText = RequestType.AddPeer.asString() + "¤+393478512584¤+393338512123";
+        String garbageText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" +
+                FIELD_SEPARATOR + "+393338512123";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
 
@@ -186,7 +193,8 @@ public class BroadcastReceiverTest {
     public void onMessageReceived_addPeerWithWrongNumber_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String garbageText = RequestType.AddPeer.asString() + "¤+393478512584¤+0000333812123";
+        String garbageText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" +
+                FIELD_SEPARATOR + "+0000333812123";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -207,7 +215,8 @@ public class BroadcastReceiverTest {
     public void onMessageReceived_correctAddPeer() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String correctText = RequestType.AddPeer.asString() + "¤+393478512584¤+39333812123";
+        String correctText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" +
+                FIELD_SEPARATOR + "+39333812123";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -226,11 +235,35 @@ public class BroadcastReceiverTest {
     }
 
     @Test
+    public void onMessageReceived_addResourceWithNoResources_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText = RequestType.AddResource.asString();
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).addResourceFromSMS(any(), any());
+        verify(mockDictionary, never()).addResourceFromSMS(any(), any());
+    }
+
+    @Test
     public void onMessageReceived_correctAddResource() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String correctText = RequestType.AddResource.asString() +
-                "¤the cat is on¤the table¤the book is¤under the table";
+        String correctText = RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is " +
+                "on" + FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
+                FIELD_SEPARATOR + "under the table";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -250,11 +283,34 @@ public class BroadcastReceiverTest {
     }
 
     @Test
+    public void onMessageReceived_removeResourceWithNoResources_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText = RequestType.RemoveResource.asString();
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).removeResourceFromSMS(any());
+        verify(mockDictionary, never()).removeResourceFromSMS(any());
+    }
+
+    @Test
     public void onMessageReceived_correctRemoveResource() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String correctText = RequestType.RemoveResource.asString() +
-                "¤the cat is on¤the table";
+        String correctText = RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat " +
+                "is on" + FIELD_SEPARATOR + "the table";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);

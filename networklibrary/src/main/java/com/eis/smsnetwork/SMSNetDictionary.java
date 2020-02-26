@@ -156,21 +156,25 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * Checks if a given key or resource is valid, else throws IllegalArgumentException.
      * A key or resource is said to be valid only if its last character is not a backslash "\".
      * <p>
-     * This is because when a Key-Resource pair gets embedded in an SMSMessage they need a
+     * This is because when a Key-Resource pair gets embedded in an SMSMessage it needs a
      * separator.
      * We decided to use {@link BroadcastReceiver#FIELD_SEPARATOR} as a separator between different
      * fields in SMS messages, and whenever {@link BroadcastReceiver#FIELD_SEPARATOR} characters
      * appear in keys and resources they are replaced by a backslash and a
-     * {@link BroadcastReceiver#FIELD_SEPARATOR}, so if we allow keys and resource to have a
+     * {@link BroadcastReceiver#FIELD_SEPARATOR}. If we allow keys and resource to have a
      * backslash character as their last one, this might result in two different fields being
-     * considered one single field.
+     * considered one single field, because that backslash will result in the successive field
+     * separator not being considered a separator.
      *
      * @param string The string to check
-     * @throws IllegalArgumentException if the argument contains a backslash as its last character.
+     * @throws IllegalArgumentException if the argument is null or contains a backslash as its
+     *                                  last character.
      */
-    private static void checkValidity(String string) {
-        if (string == null || string.matches("\\p{all}*\\\\$"))
-            throw new IllegalArgumentException("The given key or resource is not valid! Given " +
-                    "string was: " + string);
+    private static void checkValidity(@NonNull String string) {
+        if (string == null)
+            throw new IllegalArgumentException("The given key or resource is null!");
+        if (string.matches("\\p{all}*\\\\$"))
+            throw new IllegalArgumentException("The given key or resource has a backslash as its " +
+                    "last character! Given string was: " + string);
     }
 }
