@@ -12,7 +12,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 /**
- * Concrete implementation of a NetDictionary
+ * Implementation of a NetDictionary using Strings both for keys and resources, since they'll be
+ * sent over SMS.
  *
  * @author Marco Cognolato
  * @author Giovanni Velludo
@@ -29,9 +30,9 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * @throws IllegalArgumentException if one of the arguments contains a backslash as its last
      *                                  character.
      */
-    public void addResource(String key, String resource) {
-        checkKeyValidity(key);
-        checkKeyValidity(resource);
+    public void addResource(@NonNull String key, @NonNull String resource) {
+        checkValidity(key);
+        checkValidity(resource);
         dict.put(key, resource);
     }
 
@@ -42,8 +43,8 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * @throws IllegalArgumentException if the argument contains a backslash as its last
      *                                  character.
      */
-    public void removeResource(String key) {
-        checkKeyValidity(key);
+    public void removeResource(@NonNull String key) {
+        checkValidity(key);
         dict.remove(key);
     }
 
@@ -51,13 +52,13 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * Returns a resource in the dictionary
      *
      * @param key The key which defines the resource to get
-     * @return Returns a resource corresponding to the key if present in the dictionary,
-     * else returns null
+     * @return Returns a resource corresponding to the key if present in the dictionary, else
+     * returns null
      * @throws IllegalArgumentException if the argument contains a backslash as its last
      *                                  character.
      */
-    public String getResource(String key) {
-        checkKeyValidity(key);
+    public String getResource(@NonNull String key) {
+        checkValidity(key);
         return dict.get(key);
     }
 
@@ -93,7 +94,8 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
 
     /**
      * Returns a String containing all keys and resources from the dictionary, in the format
-     * "key1 resource1 key2 resource2", after calling {@link SMSNetDictionary#addEscapes(String)} on each of them.
+     * "key1 resource1 key2 resource2", after calling {@link SMSNetDictionary#addEscapes(String)}
+     * on each of them.
      *
      * @return All keys and resources present in the dictionary, ready to be sent through an SMS.
      * If there are none, returns null.
@@ -121,8 +123,8 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
 
     /**
      * Adds a backslash before every character corresponding to
-     * {@link com.eis.smsnetwork.broadcast.BroadcastReceiver#FIELD_SEPARATOR}. Needed when reading
-     * keys and resources before sending them through an SMS.
+     * {@link com.eis.smsnetwork.broadcast.BroadcastReceiver#FIELD_SEPARATOR}. Needed in order to
+     * send keys and resources through an SMS.
      *
      * @param string The String where to escape every occurrence of
      *               {@link com.eis.smsnetwork.broadcast.BroadcastReceiver#FIELD_SEPARATOR}.
@@ -154,19 +156,21 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * Checks if a given key or resource is valid, else throws IllegalArgumentException.
      * A key or resource is said to be valid only if its last character is not a backslash "\".
      * <p>
-     * This is because when a Key-Resource pair gets embedded in an SMSMessage they need a separator.
+     * This is because when a Key-Resource pair gets embedded in an SMSMessage they need a
+     * separator.
      * We decided to use {@link BroadcastReceiver#FIELD_SEPARATOR} as a separator between different
-     * objects in SMS messages, and {@link BroadcastReceiver#FIELD_SEPARATOR} characters contained
-     * in keys and resources are replaced by a backslash and a
+     * fields in SMS messages, and whenever {@link BroadcastReceiver#FIELD_SEPARATOR} characters
+     * appear in keys and resources they are replaced by a backslash and a
      * {@link BroadcastReceiver#FIELD_SEPARATOR}, so if we allow keys and resource to have a
-     * backslash character as their last one, this might result in two different objects being
-     * considered one single object.
+     * backslash character as their last one, this might result in two different fields being
+     * considered one single field.
      *
      * @param string The string to check
      * @throws IllegalArgumentException if the argument contains a backslash as its last character.
      */
-    private static void checkKeyValidity(String string) {
+    private static void checkValidity(String string) {
         if (string == null || string.matches("\\p{all}*\\\\$"))
-            throw new IllegalArgumentException("The given string is not valid! Given string was: " + string);
+            throw new IllegalArgumentException("The given key or resource is not valid! Given " +
+                    "string was: " + string);
     }
 }

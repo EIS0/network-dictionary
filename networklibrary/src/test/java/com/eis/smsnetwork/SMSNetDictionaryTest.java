@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
  * Unit tests for the SMSNetDictionary class
  *
  * @author Marco Cognolato
+ * @author Giovanni Velludo
  */
 public class SMSNetDictionaryTest {
 
@@ -99,7 +100,8 @@ public class SMSNetDictionaryTest {
         netDictionary.addResource(KEY1, RESOURCE1.replaceAll(" ", "¤"));
         netDictionary.addResource(KEY2, RESOURCE2.replaceAll(" ", "¤"));
         String dictToString = netDictionary.getAllKeyResourcePairsForSMS();
-        String expectedString = "OtherKey¤This\\¤is\\¤another\\¤valid\\¤resource¤ResourceKey¤This\\¤is\\¤a\\¤valid\\¤resource";
+        String expectedString = "OtherKey¤This\\¤is\\¤another\\¤valid\\¤resource¤ResourceKey¤This" +
+                "\\¤is\\¤a\\¤valid\\¤resource";
         assertEquals(expectedString, dictToString);
     }
 

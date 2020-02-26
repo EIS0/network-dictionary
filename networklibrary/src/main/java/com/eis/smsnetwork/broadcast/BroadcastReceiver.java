@@ -22,8 +22,11 @@ import java.util.Set;
  */
 public class BroadcastReceiver extends SMSReceivedServiceListener {
 
-    private static final int NUM_OF_REQUEST_FIELDS = 1;
+    private static final int REQUEST_FIELD_END_INDEX = 1;
     public static final String FIELD_SEPARATOR = "¤";
+    // To allow FIELD_SEPARATOR in keys and resources, we escape it with a backslash when
+    // sending those keys and resources through an SMS. Therefore we only split the message
+    // when FIELD_SEPARATOR is not preceded by a backslash.
     static final String SEPARATOR_REGEX = "(?<!\\\\)" + FIELD_SEPARATOR;
 
 
@@ -41,7 +44,8 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
      * {@link com.eis.smslibrary.SMSPeer} we have to add to our network</li>
      * <li>QuitNetwork: there are no other fields, because this request can only be sent by the
      * {@link com.eis.smslibrary.SMSPeer} who wants to be removed</li>
-     * <li>AddResource: starting from 1, fields with odd numbers contain keys, their following (even)
+     * <li>AddResource: starting from 1, fields with odd numbers contain keys, their following
+     * (even)
      * field contains the corresponding value</li>
      * <li>RemoveResource: fields from 1 to the last one contain the keys to remove</li>
      * </ul>
@@ -51,8 +55,6 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
     @Override
     public void onMessageReceived(SMSMessage message) {
         Log.d("BR_RECEIVER", "Message received: " + message.getPeer() + " " + message.getData());
-        // To allow FIELD_SEPARATOR in keys and resources, we escape it with a backslash. Therefore
-        // we only split the message when FIELD_SEPARATOR is not preceded by a backslash.
         String[] fields = message.getData().split(SEPARATOR_REGEX);
         RequestType request;
         try {
@@ -61,11 +63,11 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
             return;
         }
         if (request == null) return;
-
         SMSPeer sender = message.getPeer();
-
-        SMSNetSubscriberList subscribers = (SMSNetSubscriberList) SMSJoinableNetManager.getInstance().getNetSubscriberList();
-        SMSNetDictionary dictionary = (SMSNetDictionary) SMSJoinableNetManager.getInstance().getNetDictionary();
+        SMSNetSubscriberList subscribers =
+                (SMSNetSubscriberList) SMSJoinableNetManager.getInstance().getNetSubscriberList();
+        SMSNetDictionary dictionary =
+                (SMSNetDictionary) SMSJoinableNetManager.getInstance().getNetDictionary();
         boolean senderIsNotSubscriber = !subscribers.getSubscribers().contains(sender);
 
         switch (request) {
@@ -76,14 +78,13 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
             }
             case AcceptInvitation: {
                 if (fields.length > 1) return;
-                //Verifying if the sender has been invited to join the network
-                Set<SMSPeer> invitedPeers = SMSJoinableNetManager.getInstance()
-                        .getInvitedPeers();
+                // Verifying if the sender has been invited to join the network
+                Set<SMSPeer> invitedPeers = SMSJoinableNetManager.getInstance().getInvitedPeers();
                 if (!invitedPeers.contains(sender))
                     return;
                 invitedPeers.remove(sender);
 
-                //Sending to the invited peer my subscribers list
+                // Sending to the invited peer my subscribers list
                 StringBuilder myNetwork = new StringBuilder(RequestType.AddPeer.asString() +
                         FIELD_SEPARATOR);
                 for (SMSPeer peerToAdd : subscribers.getSubscribers())
@@ -92,28 +93,28 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                         sender, myNetwork.deleteCharAt(myNetwork.length() - 1).toString());
                 SMSManager.getInstance().sendMessage(myNetworkMessage);
 
-                //Sending to the invited peer my dictionary
+                // Sending my dictionary to the invited peer
                 String myDictionary = RequestType.AddResource.asString() + FIELD_SEPARATOR +
                         dictionary.getAllKeyResourcePairsForSMS();
                 SMSMessage myDictionaryMessage = new SMSMessage(sender, myDictionary);
                 SMSManager.getInstance().sendMessage(myDictionaryMessage);
 
-                //Broadcasting to the previous subscribers the new subscriber
+                // Broadcasting to the previous subscribers the new subscriber
                 CommandExecutor.execute(new SMSAddPeer(sender, subscribers));
-                //Updating my local subscribers list
+                // Updating my local subscribers list
                 subscribers.addSubscriber(sender);
             }
             case AddPeer: {
                 if (senderIsNotSubscriber) return;
                 SMSPeer[] peersToAdd;
                 try {
-                    peersToAdd = new SMSPeer[fields.length - NUM_OF_REQUEST_FIELDS];
+                    peersToAdd = new SMSPeer[fields.length - REQUEST_FIELD_END_INDEX];
                 } catch (NegativeArraySizeException e) {
                     return;
                 }
                 try {
-                    for (int i = NUM_OF_REQUEST_FIELDS; i < fields.length; i++)
-                        peersToAdd[i - NUM_OF_REQUEST_FIELDS] = new SMSPeer(fields[i]);
+                    for (int i = REQUEST_FIELD_END_INDEX; i < fields.length; i++)
+                        peersToAdd[i - REQUEST_FIELD_END_INDEX] = new SMSPeer(fields[i]);
                 } catch (InvalidTelephoneNumberException | ArrayIndexOutOfBoundsException e) {
                     return;
                 }
@@ -135,16 +136,21 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 // corresponding value, so the message we received is garbage. For example, with 4
                 // fields we'll have: requestType, key, value, key
                 if (senderIsNotSubscriber || fields.length % 2 == 0) return;
+                // the last field is the only one which can possibly contain a backslash as its last
+                // character, if it does then the message we received is garbage because keys and
+                // resources cannot have a backslash as their last character
+                String lastField = fields[fields.length - 1];
+                if (lastField.charAt(lastField.length() - 1) == '\\') return;
                 String[] keys;
                 String[] values;
                 try {
-                    keys = new String[(fields.length - NUM_OF_REQUEST_FIELDS) / 2];
+                    keys = new String[(fields.length - REQUEST_FIELD_END_INDEX) / 2];
                     values = new String[keys.length];
                 } catch (NegativeArraySizeException e) {
                     return;
                 }
                 try {
-                    for (int i = 0, j = NUM_OF_REQUEST_FIELDS; j < fields.length; i++) {
+                    for (int i = 0, j = REQUEST_FIELD_END_INDEX; j < fields.length; i++) {
                         keys[i] = fields[j++];
                         values[i] = fields[j++];
                     }
@@ -152,22 +158,21 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                     return;
                 }
                 for (int i = 0; i < keys.length; i++) {
-                    try {
-                        dictionary.addResourceFromSMS(keys[i], values[i]);
-                    } catch (IllegalArgumentException e) {
-                        // this can only happen in the last element of values, because it's the only
-                        // one that can contain a backslash
-                        return;
-                    }
+                    dictionary.addResourceFromSMS(keys[i], values[i]);
                 }
                 break;
             }
             case RemoveResource: {
                 if (senderIsNotSubscriber) return;
+                // the last field is the only one which can possibly contain a backslash as its last
+                // character, if it does then the message we received is garbage because keys and
+                // resources cannot have a backslash as their last character
+                String lastField = fields[fields.length - 1];
+                if (lastField.charAt(lastField.length() - 1) == '\\') return;
                 try {
-                    for (int i = NUM_OF_REQUEST_FIELDS; i < fields.length; i++)
+                    for (int i = REQUEST_FIELD_END_INDEX; i < fields.length; i++)
                         dictionary.removeResourceFromSMS(fields[i]);
-                } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+                } catch (ArrayIndexOutOfBoundsException e) {
                     return;
                 }
                 break;
