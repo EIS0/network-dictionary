@@ -1,9 +1,7 @@
 package com.eis.smsnetwork.broadcast;
 
-import android.content.res.AssetFileDescriptor;
 import android.util.Log;
 
-import com.eis.communication.network.commands.CommandExecutor;
 import com.eis.smslibrary.SMSManager;
 import com.eis.smslibrary.SMSMessage;
 import com.eis.smslibrary.SMSPeer;
@@ -12,7 +10,6 @@ import com.eis.smsnetwork.SMSInvitation;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.SMSNetDictionary;
 import com.eis.smsnetwork.SMSNetSubscriberList;
-import com.eis.smsnetwork.smsnetcommands.SMSAddPeer;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,7 +30,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static com.eis.smsnetwork.broadcast.BroadcastReceiver.FIELD_SEPARATOR;
 
