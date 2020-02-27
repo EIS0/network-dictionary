@@ -1,7 +1,10 @@
 package com.eis.smsnetwork.broadcast;
 
+import android.content.res.AssetFileDescriptor;
 import android.util.Log;
 
+import com.eis.communication.network.commands.CommandExecutor;
+import com.eis.smslibrary.SMSManager;
 import com.eis.smslibrary.SMSMessage;
 import com.eis.smslibrary.SMSPeer;
 import com.eis.smsnetwork.RequestType;
@@ -9,6 +12,7 @@ import com.eis.smsnetwork.SMSInvitation;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.SMSNetDictionary;
 import com.eis.smsnetwork.SMSNetSubscriberList;
+import com.eis.smsnetwork.smsnetcommands.SMSAddPeer;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,7 +31,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static com.eis.smsnetwork.broadcast.BroadcastReceiver.FIELD_SEPARATOR;
 
@@ -35,11 +41,14 @@ import static com.eis.smsnetwork.broadcast.BroadcastReceiver.FIELD_SEPARATOR;
  * @author Giovanni Velludo
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SMSJoinableNetManager.class, Log.class})
+@PrepareForTest({SMSJoinableNetManager.class, SMSManager.class, Log.class})
 public class BroadcastReceiverTest {
 
     @Captor
     ArgumentCaptor<SMSInvitation> invitationCaptor;
+
+    @Captor
+    ArgumentCaptor<SMSMessage> messageCaptor;
 
     @Before
     public void setUp() {
@@ -124,6 +133,46 @@ public class BroadcastReceiverTest {
         instance.onMessageReceived(correctMessage);
         verify(mockManager).checkInvitation(invitationCaptor.capture());
         Assert.assertEquals(sender, invitationCaptor.getValue().getInviterPeer());
+    }
+
+    @Test
+    public void onMessageReceived_correctAcceptInvitation() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        SMSPeer subscriber = new SMSPeer("+393332734121");
+        String correctText = RequestType.AcceptInvitation.asString();
+        SMSMessage correctMessage = new SMSMessage(sender, correctText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(subscriber);
+        Set<SMSPeer> invitedPeers = new HashSet<>();
+        invitedPeers.add(sender);
+        String expectedMySubscribersText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + subscriber;
+        String expectedMyDictionaryText = RequestType.AddResource.asString() + FIELD_SEPARATOR + "Key¤This is a valid resource¤OtherKey¤This is another valid resource";
+        String expectedAddPeerTextForSubscribers = RequestType.AddPeer.asString() + FIELD_SEPARATOR + sender;
+
+        SMSManager mockSMSManager = mock(SMSManager.class);
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        when(mockDictionary.getAllKeyResourcePairsForSMS()).thenReturn("Key¤This is a valid resource¤OtherKey¤This is another valid resource");
+        SMSJoinableNetManager mockNetworkManager = mock(SMSJoinableNetManager.class);
+        when(mockNetworkManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockNetworkManager.getNetDictionary()).thenReturn(mockDictionary);
+        when(mockNetworkManager.getInvitedPeers()).thenReturn(invitedPeers);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockNetworkManager);
+        PowerMockito.mockStatic(SMSManager.class);
+        when(SMSManager.getInstance()).thenReturn(mockSMSManager);
+
+        instance.onMessageReceived(correctMessage);
+        verify(mockSMSManager, times(3)).sendMessage(messageCaptor.capture());
+        Assert.assertEquals(sender, messageCaptor.getAllValues().get(0).getPeer());
+        Assert.assertEquals(expectedMySubscribersText, messageCaptor.getAllValues().get(0).getData());
+        Assert.assertEquals(sender, messageCaptor.getAllValues().get(1).getPeer());
+        Assert.assertEquals(expectedMyDictionaryText, messageCaptor.getAllValues().get(1).getData());
+        Assert.assertEquals(subscriber, messageCaptor.getAllValues().get(2).getPeer());
+        Assert.assertEquals(expectedAddPeerTextForSubscribers, messageCaptor.getAllValues().get(2).getData());
+        verify(mockSubscribers, times(2)).addSubscriber(sender);
     }
 
     @Test

@@ -85,13 +85,13 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 invitedPeers.remove(sender);
 
                 // Sending to the invited peer my subscribers list
-                StringBuilder myNetwork = new StringBuilder(RequestType.AddPeer.asString() +
+                StringBuilder mySubscribers = new StringBuilder(RequestType.AddPeer.asString() +
                         FIELD_SEPARATOR);
                 for (SMSPeer peerToAdd : subscribers.getSubscribers())
-                    myNetwork.append(peerToAdd).append(FIELD_SEPARATOR);
-                SMSMessage myNetworkMessage = new SMSMessage(
-                        sender, myNetwork.deleteCharAt(myNetwork.length() - 1).toString());
-                SMSManager.getInstance().sendMessage(myNetworkMessage);
+                    mySubscribers.append(peerToAdd).append(FIELD_SEPARATOR);
+                SMSMessage mySubscribersMessage = new SMSMessage(
+                        sender, mySubscribers.deleteCharAt(mySubscribers.length() - 1).toString());
+                SMSManager.getInstance().sendMessage(mySubscribersMessage);
 
                 // Sending my dictionary to the invited peer
                 String myDictionary = RequestType.AddResource.asString() + FIELD_SEPARATOR +
