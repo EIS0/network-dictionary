@@ -136,6 +136,63 @@ public class BroadcastReceiverTest {
     }
 
     @Test
+    public void onMessageReceived_acceptInvitationFromUninvited_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        SMSPeer subscriber = new SMSPeer("+393332734121");
+        String correctText = RequestType.AcceptInvitation.asString();
+        SMSMessage correctMessage = new SMSMessage(sender, correctText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(subscriber);
+        Set<SMSPeer> invitedPeers = new HashSet<>();
+
+        SMSManager mockSMSManager = mock(SMSManager.class);
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSJoinableNetManager mockNetworkManager = mock(SMSJoinableNetManager.class);
+        when(mockNetworkManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockNetworkManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        when(mockNetworkManager.getInvitedPeers()).thenReturn(invitedPeers);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockNetworkManager);
+        PowerMockito.mockStatic(SMSManager.class);
+        when(SMSManager.getInstance()).thenReturn(mockSMSManager);
+
+        instance.onMessageReceived(correctMessage);
+        verify(mockSMSManager, never()).sendMessage(any());
+        verify(mockSubscribers, never()).addSubscriber(any());
+    }
+
+    @Test
+    public void onMessageReceived_acceptInvitationWithGarbage_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        SMSPeer subscriber = new SMSPeer("+393332734121");
+        String garbageText = RequestType.AcceptInvitation.asString() + "P";
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(subscriber);
+        Set<SMSPeer> invitedPeers = new HashSet<>();
+        invitedPeers.add(sender);
+
+        SMSManager mockSMSManager = mock(SMSManager.class);
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSJoinableNetManager mockNetworkManager = mock(SMSJoinableNetManager.class);
+        when(mockNetworkManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockNetworkManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        when(mockNetworkManager.getInvitedPeers()).thenReturn(invitedPeers);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockNetworkManager);
+        PowerMockito.mockStatic(SMSManager.class);
+        when(SMSManager.getInstance()).thenReturn(mockSMSManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockSMSManager, never()).sendMessage(any());
+        verify(mockSubscribers, never()).addSubscriber(any());
+    }
+
+    @Test
     public void onMessageReceived_correctAcceptInvitation() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
