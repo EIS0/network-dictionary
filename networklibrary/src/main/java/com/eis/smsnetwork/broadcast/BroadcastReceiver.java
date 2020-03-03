@@ -90,6 +90,9 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 for (SMSPeer peerToAdd : subscribers.getSubscribers())
                     mySubscribers.append(peerToAdd).append(FIELD_SEPARATOR);
                 SMSMessage mySubscribersMessage = new SMSMessage(
+                        // we remove the last character in mySubscribers because it's a
+                        // FIELD_SEPARATOR, and there's no need for it since there can't be any
+                        // more fields after the last character of the message
                         sender, mySubscribers.deleteCharAt(mySubscribers.length() - 1).toString());
                 SMSManager.getInstance().sendMessage(mySubscribersMessage);
 
