@@ -53,6 +53,11 @@ public class BroadcastReceiverTest {
         when(Log.e(anyString(), anyString())).thenReturn(0);
     }
 
+    /**
+     * Tests whether {@link BroadcastReceiver#SEPARATOR_REGEX} correctly splits fields in
+     * received messages, that is whenever a non escaped
+     * {@link BroadcastReceiver#FIELD_SEPARATOR} is found.
+     */
     @Test
     public void separatorRegex() {
         String message = "è" + FIELD_SEPARATOR + "greeting" + FIELD_SEPARATOR + "howdily\\" +
@@ -76,6 +81,9 @@ public class BroadcastReceiverTest {
         Assert.assertArrayEquals(expectedFields, fields);
     }
 
+    /**
+     * Tests whether a message not meant for our dictionary is ignored.
+     */
     @Test
     public void onMessageReceived_garbage_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -93,6 +101,10 @@ public class BroadcastReceiverTest {
         SMSJoinableNetManager.getInstance();
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#Invite} containing some unneeded
+     * additional fields is ignored.
+     */
     @Test
     public void onMessageReceived_inviteWithGarbage_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -110,6 +122,10 @@ public class BroadcastReceiverTest {
         verify(mockManager, never()).checkInvitation(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#Invite} and no additional fields is
+     * correctly processed.
+     */
     @Test
     public void onMessageReceived_correctInvite() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -132,6 +148,10 @@ public class BroadcastReceiverTest {
         Assert.assertEquals(sender, invitationCaptor.getValue().getInviterPeer());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AcceptInvitation} received by a peer who
+     * wasn't invited is ignored.
+     */
     @Test
     public void onMessageReceived_acceptInvitationFromUninvited_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -160,6 +180,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers, never()).addSubscriber(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AcceptInvitation} containing unneeded
+     * additional fields is ignored.
+     */
     @Test
     public void onMessageReceived_acceptInvitationWithGarbage_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -189,6 +213,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers, never()).addSubscriber(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AcceptInvitation} and no additional fields
+     * from a peer who was invited is correctly processed.
+     */
     @Test
     public void onMessageReceived_correctAcceptInvitation() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -200,15 +228,19 @@ public class BroadcastReceiverTest {
         subscribersSet.add(subscriber);
         Set<SMSPeer> invitedPeers = new HashSet<>();
         invitedPeers.add(sender);
-        String expectedMySubscribersText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + subscriber;
-        String expectedMyDictionaryText = RequestType.AddResource.asString() + FIELD_SEPARATOR + "Key¤This is a valid resource¤OtherKey¤This is another valid resource";
-        String expectedAddPeerTextForSubscribers = RequestType.AddPeer.asString() + FIELD_SEPARATOR + sender;
+        String expectedMySubscribersText =
+                RequestType.AddPeer.asString() + FIELD_SEPARATOR + subscriber;
+        String expectedMyDictionaryText = RequestType.AddResource.asString() + FIELD_SEPARATOR +
+                "Key¤This is a valid resource¤OtherKey¤This is another valid resource";
+        String expectedAddPeerTextForSubscribers =
+                RequestType.AddPeer.asString() + FIELD_SEPARATOR + sender;
 
         SMSManager mockSMSManager = mock(SMSManager.class);
         SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
         when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
         SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
-        when(mockDictionary.getAllKeyResourcePairsForSMS()).thenReturn("Key¤This is a valid resource¤OtherKey¤This is another valid resource");
+        when(mockDictionary.getAllKeyResourcePairsForSMS()).thenReturn("Key¤This is a valid " +
+                "resource¤OtherKey¤This is another valid resource");
         SMSJoinableNetManager mockNetworkManager = mock(SMSJoinableNetManager.class);
         when(mockNetworkManager.getNetSubscriberList()).thenReturn(mockSubscribers);
         when(mockNetworkManager.getNetDictionary()).thenReturn(mockDictionary);
@@ -221,14 +253,21 @@ public class BroadcastReceiverTest {
         instance.onMessageReceived(correctMessage);
         verify(mockSMSManager, times(3)).sendMessage(messageCaptor.capture());
         Assert.assertEquals(sender, messageCaptor.getAllValues().get(0).getPeer());
-        Assert.assertEquals(expectedMySubscribersText, messageCaptor.getAllValues().get(0).getData());
+        Assert.assertEquals(expectedMySubscribersText,
+                messageCaptor.getAllValues().get(0).getData());
         Assert.assertEquals(sender, messageCaptor.getAllValues().get(1).getPeer());
-        Assert.assertEquals(expectedMyDictionaryText, messageCaptor.getAllValues().get(1).getData());
+        Assert.assertEquals(expectedMyDictionaryText,
+                messageCaptor.getAllValues().get(1).getData());
         Assert.assertEquals(subscriber, messageCaptor.getAllValues().get(2).getPeer());
-        Assert.assertEquals(expectedAddPeerTextForSubscribers, messageCaptor.getAllValues().get(2).getData());
+        Assert.assertEquals(expectedAddPeerTextForSubscribers,
+                messageCaptor.getAllValues().get(2).getData());
         verify(mockSubscribers, times(2)).addSubscriber(sender);
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#QuitNetwork} and unneeded additional
+     * fields is ignored.
+     */
     @Test
     public void onMessageReceived_quitNetworkWithGarbage_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -250,6 +289,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers, never()).removeSubscriber(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#QuitNetwork} and no additional fields is
+     * correctly processed.
+     */
     @Test
     public void onMessageReceived_correctQuitNetwork() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -271,6 +314,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers).removeSubscriber(sender);
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AddPeer} from a peer who's not part of our
+     * network is ignored.
+     */
     @Test
     public void onMessageReceived_addPeerFromNonSubscriber_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -292,6 +339,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers, never()).addSubscriber(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AddPeer} containing an invalid phone
+     * number is ignored.
+     */
     @Test
     public void onMessageReceived_addPeerWithWrongNumber_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -314,6 +365,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers, never()).addSubscriber(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AddPeer} and proper formatting is
+     * correctly processed.
+     */
     @Test
     public void onMessageReceived_correctAddPeer() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -337,6 +392,10 @@ public class BroadcastReceiverTest {
         verify(mockSubscribers).addSubscriber(new SMSPeer("+39333812123"));
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AddResource} and containing no
+     * key-resource pairs is ignored.
+     */
     @Test
     public void onMessageReceived_addResourceWithNoResources_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -360,6 +419,10 @@ public class BroadcastReceiverTest {
         verify(mockDictionary, never()).addResourceFromSMS(any(), any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#AddResource} and proper formatting is
+     * correctly processed.
+     */
     @Test
     public void onMessageReceived_correctAddResource() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -385,6 +448,10 @@ public class BroadcastReceiverTest {
         verify(mockDictionary).addResourceFromSMS("the book is", "under the table");
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#RemoveResource} and no keys of the
+     * resources to remove is ignored.
+     */
     @Test
     public void onMessageReceived_removeResourceWithNoResources_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
@@ -408,6 +475,10 @@ public class BroadcastReceiverTest {
         verify(mockDictionary, never()).removeResourceFromSMS(any());
     }
 
+    /**
+     * Tests whether a message with {@link RequestType#RemoveResource} and proper formatting is
+     * correctly processed.
+     */
     @Test
     public void onMessageReceived_correctRemoveResource() {
         BroadcastReceiver instance = new BroadcastReceiver();
