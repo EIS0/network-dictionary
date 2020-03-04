@@ -54,15 +54,15 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether {@link BroadcastReceiver#SEPARATOR_REGEX} correctly splits fields in
-     * received messages, that is whenever a non escaped
-     * {@link BroadcastReceiver#FIELD_SEPARATOR} is found.
+     * Tests whether {@link BroadcastReceiver#SEPARATOR_REGEX} correctly splits fields in received
+     * messages, that is whenever a non escaped {@link BroadcastReceiver#FIELD_SEPARATOR} is found.
      */
     @Test
     public void separatorRegex() {
-        String message = "è" + FIELD_SEPARATOR + "greeting" + FIELD_SEPARATOR + "howdily\\" +
-                FIELD_SEPARATOR + "doodily" + FIELD_SEPARATOR + "tree" + FIELD_SEPARATOR + "pinus\\"
-                + FIELD_SEPARATOR + "pinaster\\" + FIELD_SEPARATOR;
+        String message =
+                "è" + FIELD_SEPARATOR + "greeting" + FIELD_SEPARATOR + "howdily\\" + FIELD_SEPARATOR
+                        + "doodily" + FIELD_SEPARATOR + "tree" + FIELD_SEPARATOR + "pinus\\" +
+                        FIELD_SEPARATOR + "pinaster\\" + FIELD_SEPARATOR;
         String[] expectedFields = {"è", "greeting", "howdily\\" + FIELD_SEPARATOR + "doodily",
                 "tree", "pinus" + "\\" + FIELD_SEPARATOR + "pinaster\\" + FIELD_SEPARATOR};
         String[] fields = message.split(BroadcastReceiver.SEPARATOR_REGEX);
@@ -73,8 +73,9 @@ public class BroadcastReceiverTest {
         fields = message.split(BroadcastReceiver.SEPARATOR_REGEX);
         Assert.assertArrayEquals(expectedFields, fields);
 
-        message = "word" + FIELD_SEPARATOR + "\\\\" + FIELD_SEPARATOR + "word" + FIELD_SEPARATOR +
-                "\\" + FIELD_SEPARATOR + "word";
+        message =
+                "word" + FIELD_SEPARATOR + "\\\\" + FIELD_SEPARATOR + "word" + FIELD_SEPARATOR +
+                        "\\" + FIELD_SEPARATOR + "word";
         expectedFields = new String[]{"word", "\\\\" + FIELD_SEPARATOR + "word",
                 "\\" + FIELD_SEPARATOR + "word"};
         fields = message.split(BroadcastReceiver.SEPARATOR_REGEX);
@@ -102,8 +103,28 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether a message with {@link RequestType#Invite} containing some unneeded
-     * additional fields is ignored.
+     * Tests whether an empty message is ignored.
+     */
+    @Test
+    public void onMessageReceived_emptyMessage_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        SMSMessage garbage = new SMSMessage(sender, "");
+
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(new SMSNetSubscriberList());
+        when(mockManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbage);
+        PowerMockito.verifyStatic(never());
+        SMSJoinableNetManager.getInstance();
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#Invite} containing some unneeded additional
+     * characters is ignored.
      */
     @Test
     public void onMessageReceived_inviteWithGarbage_isIgnored() {
@@ -123,8 +144,29 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether a message with {@link RequestType#Invite} and no additional fields is
-     * correctly processed.
+     * Tests whether a message with {@link RequestType#Invite} containing unneeded additional fields
+     * is ignored.
+     */
+    @Test
+    public void onMessageReceived_inviteWithUnneededFields_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText = RequestType.Invite.asString() + FIELD_SEPARATOR + ">";
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(new SMSNetSubscriberList());
+        when(mockManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockManager, never()).checkInvitation(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#Invite} and no additional fields is correctly
+     * processed.
      */
     @Test
     public void onMessageReceived_correctInvite() {
@@ -182,7 +224,7 @@ public class BroadcastReceiverTest {
 
     /**
      * Tests whether a message with {@link RequestType#AcceptInvitation} containing unneeded
-     * additional fields is ignored.
+     * additional characters is ignored.
      */
     @Test
     public void onMessageReceived_acceptInvitationWithGarbage_isIgnored() {
@@ -190,6 +232,39 @@ public class BroadcastReceiverTest {
         SMSPeer sender = new SMSPeer("+393492794133");
         SMSPeer subscriber = new SMSPeer("+393332734121");
         String garbageText = RequestType.AcceptInvitation.asString() + "P";
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(subscriber);
+        Set<SMSPeer> invitedPeers = new HashSet<>();
+        invitedPeers.add(sender);
+
+        SMSManager mockSMSManager = mock(SMSManager.class);
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSJoinableNetManager mockNetworkManager = mock(SMSJoinableNetManager.class);
+        when(mockNetworkManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockNetworkManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        when(mockNetworkManager.getInvitedPeers()).thenReturn(invitedPeers);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockNetworkManager);
+        PowerMockito.mockStatic(SMSManager.class);
+        when(SMSManager.getInstance()).thenReturn(mockSMSManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockSMSManager, never()).sendMessage(any());
+        verify(mockSubscribers, never()).addSubscriber(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#AcceptInvitation} containing unneeded
+     * additional fields is ignored.
+     */
+    @Test
+    public void onMessageReceived_acceptInvitationWithUnneededFields_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        SMSPeer subscriber = new SMSPeer("+393332734121");
+        String garbageText = RequestType.AcceptInvitation.asString() + FIELD_SEPARATOR + "P";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(subscriber);
@@ -266,7 +341,7 @@ public class BroadcastReceiverTest {
 
     /**
      * Tests whether a message with {@link RequestType#QuitNetwork} and unneeded additional
-     * fields is ignored.
+     * characters is ignored.
      */
     @Test
     public void onMessageReceived_quitNetworkWithGarbage_isIgnored() {
@@ -276,6 +351,55 @@ public class BroadcastReceiverTest {
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockSubscribers, never()).removeSubscriber(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#QuitNetwork} and unneeded additional fields
+     * is ignored.
+     */
+    @Test
+    public void onMessageReceived_quitNetworkWithUnneededFields_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText = RequestType.QuitNetwork.asString() + FIELD_SEPARATOR + ">";
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockSubscribers, never()).removeSubscriber(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#QuitNetwork} coming from somebody who's not a
+     * subscriber is ignored.
+     */
+    @Test
+    public void onMessageReceived_quitNetworkFromNonSubscriber_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText = RequestType.QuitNetwork.asString() + FIELD_SEPARATOR + ">";
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
 
         SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
         when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
@@ -322,8 +446,9 @@ public class BroadcastReceiverTest {
     public void onMessageReceived_addPeerFromNonSubscriber_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String garbageText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" +
-                FIELD_SEPARATOR + "+393338512123";
+        String garbageText =
+                RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" + FIELD_SEPARATOR
+                        + "+393338512123";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
 
@@ -340,15 +465,16 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether a message with {@link RequestType#AddPeer} containing an invalid phone
-     * number is ignored.
+     * Tests whether a message with {@link RequestType#AddPeer} containing an invalid phone number
+     * is ignored.
      */
     @Test
     public void onMessageReceived_addPeerWithWrongNumber_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String garbageText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" +
-                FIELD_SEPARATOR + "+0000333812123";
+        String garbageText =
+                RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" + FIELD_SEPARATOR
+                        + "+0000333812123";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -366,15 +492,42 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether a message with {@link RequestType#AddPeer} and proper formatting is
-     * correctly processed.
+     * Tests whether a message with {@link RequestType#AddPeer} containing no peers to be added is
+     * ignored.
+     */
+    @Test
+    public void onMessageReceived_addPeerWithNoPeers_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText =
+                RequestType.AddPeer.asString() + FIELD_SEPARATOR + "" + FIELD_SEPARATOR;
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(new SMSNetDictionary());
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockSubscribers, never()).addSubscriber(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#AddPeer} and proper formatting is correctly
+     * processed.
      */
     @Test
     public void onMessageReceived_correctAddPeer() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String correctText = RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" +
-                FIELD_SEPARATOR + "+39333812123";
+        String correctText =
+                RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" + FIELD_SEPARATOR
+                        + "+39333812123";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -393,14 +546,99 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether a message with {@link RequestType#AddResource} and containing no
-     * key-resource pairs is ignored.
+     * Tests whether a message with {@link RequestType#AddResource} and containing no key-resource
+     * pairs is ignored.
      */
     @Test
     public void onMessageReceived_addResourceWithNoResources_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.AddResource.asString();
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).addResourceFromSMS(any(), any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#AddResource} coming from somebody who's not a
+     * subscriber is ignored.
+     */
+    @Test
+    public void onMessageReceived_addResourceFromNonSubscriber_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String correctText =
+                RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
+                FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
+                FIELD_SEPARATOR + "under the table";
+        SMSMessage garbageMessage = new SMSMessage(sender, correctText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).addResourceFromSMS(any(), any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#AddResource} and containing a key with no
+     * associated resource is ignored.
+     */
+    @Test
+    public void onMessageReceived_addResourceWithKeyButNoAssociatedResource_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText =
+                RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
+                        FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is";
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).addResourceFromSMS(any(), any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#AddResource} and containing an invalid
+     * resource is ignored.
+     */
+    @Test
+    public void onMessageReceived_addResourceWithInvalidResource_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText =
+                RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
+                        FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
+                        FIELD_SEPARATOR + "under the table\\";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -426,9 +664,10 @@ public class BroadcastReceiverTest {
     public void onMessageReceived_correctAddResource() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String correctText = RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is " +
-                "on" + FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
-                FIELD_SEPARATOR + "under the table";
+        String correctText =
+                RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
+                        FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
+                        FIELD_SEPARATOR + "under the table";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -448,14 +687,69 @@ public class BroadcastReceiverTest {
     }
 
     /**
-     * Tests whether a message with {@link RequestType#RemoveResource} and no keys of the
-     * resources to remove is ignored.
+     * Tests whether a message with {@link RequestType#RemoveResource} and no keys of the resources
+     * to remove is ignored.
      */
     @Test
     public void onMessageReceived_removeResourceWithNoResources_isIgnored() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.RemoveResource.asString();
+        SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+        subscribersSet.add(sender);
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).removeResourceFromSMS(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#RemoveResource} from somebody who's not a
+     * subscriber is ignored.
+     */
+    @Test
+    public void onMessageReceived_removeResourceFromNonSubscriber_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String correctText =
+                RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat is on" +
+                FIELD_SEPARATOR + "the table";
+        SMSMessage garbageMessage = new SMSMessage(sender, correctText);
+        Set<SMSPeer> subscribersSet = new HashSet<>();
+
+        SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
+        when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
+        SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
+        SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
+        when(mockManager.getNetSubscriberList()).thenReturn(mockSubscribers);
+        when(mockManager.getNetDictionary()).thenReturn(mockDictionary);
+        PowerMockito.mockStatic(SMSJoinableNetManager.class);
+        when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
+
+        instance.onMessageReceived(garbageMessage);
+        verify(mockDictionary, never()).removeResourceFromSMS(any());
+    }
+
+    /**
+     * Tests whether a message with {@link RequestType#RemoveResource} containing an invalid key is
+     * ignored.
+     */
+    @Test
+    public void onMessageReceived_removeResourceWithInvalidKey_isIgnored() {
+        BroadcastReceiver instance = new BroadcastReceiver();
+        SMSPeer sender = new SMSPeer("+393492794133");
+        String garbageText =
+                RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat is on" +
+                        FIELD_SEPARATOR + "the table\\";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
@@ -481,8 +775,9 @@ public class BroadcastReceiverTest {
     public void onMessageReceived_correctRemoveResource() {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
-        String correctText = RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat " +
-                "is on" + FIELD_SEPARATOR + "the table";
+        String correctText =
+                RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat " + "is on" +
+                        FIELD_SEPARATOR + "the table";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
         subscribersSet.add(sender);
