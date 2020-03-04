@@ -223,7 +223,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 // resources cannot have a backslash as their last character
                 String lastField = fields[fields.length - 1];
                 if (lastField.charAt(lastField.length() - 1) == '\\') {
-                    Log.e(LOG_TAG, "RemoveResource message contains an invalid resource");
+                    Log.e(LOG_TAG, "RemoveResource message contains an invalid key");
                     return;
                 }
                 try {
