@@ -416,7 +416,6 @@ public class BroadcastReceiverTest {
 
         instance.onMessageReceived(garbageMessage);
         verify(mockDictionary, never()).addResourceFromSMS(any(), any());
-        verify(mockDictionary, never()).addResourceFromSMS(any(), any());
     }
 
     /**
@@ -471,7 +470,6 @@ public class BroadcastReceiverTest {
         when(SMSJoinableNetManager.getInstance()).thenReturn(mockManager);
 
         instance.onMessageReceived(garbageMessage);
-        verify(mockDictionary, never()).removeResourceFromSMS(any());
         verify(mockDictionary, never()).removeResourceFromSMS(any());
     }
 
