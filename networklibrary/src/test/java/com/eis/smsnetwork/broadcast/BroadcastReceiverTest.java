@@ -50,6 +50,7 @@ public class BroadcastReceiverTest {
     public void setUp() {
         PowerMockito.mockStatic(Log.class);
         when(Log.d(anyString(), anyString())).thenReturn(0);
+        when(Log.e(anyString(), anyString())).thenReturn(0);
     }
 
     @Test

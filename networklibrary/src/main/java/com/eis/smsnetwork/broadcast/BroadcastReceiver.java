@@ -28,6 +28,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
     // sending those keys and resources through an SMS. Therefore we only split the message
     // when FIELD_SEPARATOR is not preceded by a backslash.
     static final String SEPARATOR_REGEX = "(?<!\\\\)" + FIELD_SEPARATOR;
+    private static final String LOG_TAG = "BroadcastReceiver";
 
 
     /**
@@ -45,8 +46,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
      * <li>QuitNetwork: there are no other fields, because this request can only be sent by the
      * {@link com.eis.smslibrary.SMSPeer} who wants to be removed</li>
      * <li>AddResource: starting from 1, fields with odd numbers contain keys, their following
-     * (even)
-     * field contains the corresponding value</li>
+     * (even) field contains the corresponding value</li>
      * <li>RemoveResource: fields from 1 to the last one contain the keys to remove</li>
      * </ul>
      *
@@ -54,15 +54,22 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
      */
     @Override
     public void onMessageReceived(SMSMessage message) {
-        Log.d("BR_RECEIVER", "Message received: " + message.getPeer() + " " + message.getData());
+        Log.d(LOG_TAG, "Message received: " + message.getPeer() + " " + message.getData());
         String[] fields = message.getData().split(SEPARATOR_REGEX);
         RequestType request;
         try {
             request = RequestType.get(fields[0]);
-        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Log.e(LOG_TAG, "Message has no fields");
+            return;
+        } catch (NullPointerException e) {
+            Log.e(LOG_TAG, "Message has invalid RequestType");
             return;
         }
-        if (request == null) return;
+        if (request == null) {
+            Log.e(LOG_TAG, "Message has empty field 0");
+            return;
+        }
         SMSPeer sender = message.getPeer();
         SMSNetSubscriberList subscribers =
                 (SMSNetSubscriberList) SMSJoinableNetManager.getInstance().getNetSubscriberList();
@@ -72,16 +79,24 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
 
         switch (request) {
             case Invite: {
-                if (fields.length > 1) return;
+                if (fields.length > 1) {
+                    Log.e(LOG_TAG, "Message has " + fields.length + " fields, but there should have been only 1");
+                    return;
+                }
                 SMSJoinableNetManager.getInstance().checkInvitation(new SMSInvitation(sender));
                 break;
             }
             case AcceptInvitation: {
-                if (fields.length > 1) return;
+                if (fields.length > 1) {
+                    Log.e(LOG_TAG, "Message has " + fields.length + " fields, but there should have been only 1");
+                    return;
+                }
                 // Verifying if the sender has been invited to join the network
                 Set<SMSPeer> invitedPeers = SMSJoinableNetManager.getInstance().getInvitedPeers();
-                if (!invitedPeers.contains(sender))
+                if (!invitedPeers.contains(sender)) {
+                    Log.e(LOG_TAG, "AcceptInvitation received by peer who wasn't invited");
                     return;
+                }
                 invitedPeers.remove(sender);
 
                 // Sending to the invited peer my subscribers list
@@ -108,17 +123,25 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 subscribers.addSubscriber(sender);
             }
             case AddPeer: {
-                if (senderIsNotSubscriber) return;
+                if (senderIsNotSubscriber) {
+                    Log.e(LOG_TAG, "AddPeer received by peer who's not part of our network");
+                    return;
+                }
                 SMSPeer[] peersToAdd;
                 try {
                     peersToAdd = new SMSPeer[fields.length - REQUEST_FIELD_END_INDEX];
                 } catch (NegativeArraySizeException e) {
+                    Log.e(LOG_TAG, "RequestType is AddPeer, but the message doesn't contain any peers to be added");
                     return;
                 }
                 try {
                     for (int i = REQUEST_FIELD_END_INDEX; i < fields.length; i++)
                         peersToAdd[i - REQUEST_FIELD_END_INDEX] = new SMSPeer(fields[i]);
-                } catch (InvalidTelephoneNumberException | ArrayIndexOutOfBoundsException e) {
+                } catch (InvalidTelephoneNumberException e) {
+                    Log.e(LOG_TAG, "Peers to be added have an invalid phone number");
+                    return;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    Log.e(LOG_TAG, "RequestType is AddPeer, but the message doesn't contain any peers to be added");
                     return;
                 }
                 for (SMSPeer peer : peersToAdd)
@@ -126,30 +149,45 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 break;
             }
             case QuitNetwork: {
-                if (fields.length > 1) return;
+                if (fields.length > 1) {
+                    Log.e(LOG_TAG, "Message has " + fields.length + " fields, there should have been only 1");
+                    return;
+                }
                 try {
                     subscribers.removeSubscriber(sender);
                 } catch (IllegalArgumentException e) {
+                    Log.e(LOG_TAG, "The subscriber asking to be removed from the network is not part of the network");
                     return;
                 }
                 break;
             }
             case AddResource: {
+                if (senderIsNotSubscriber) {
+                    Log.e(LOG_TAG, "AddResource received by peer who's not part of our network");
+                    return;
+                }
                 // if the number of fields is even, that means not every key will have a
                 // corresponding value, so the message we received is garbage. For example, with 4
                 // fields we'll have: requestType, key, value, key
-                if (senderIsNotSubscriber || fields.length % 2 == 0) return;
+                if (fields.length % 2 == 0) {
+                    Log.e(LOG_TAG, "AddResource message contains a key with no corresponding resource");
+                    return;
+                }
                 // the last field is the only one which can possibly contain a backslash as its last
                 // character, if it does then the message we received is garbage because keys and
                 // resources cannot have a backslash as their last character
                 String lastField = fields[fields.length - 1];
-                if (lastField.charAt(lastField.length() - 1) == '\\') return;
+                if (lastField.charAt(lastField.length() - 1) == '\\') {
+                    Log.e(LOG_TAG, "AddResource message contains an invalid resource");
+                    return;
+                }
                 String[] keys;
                 String[] values;
                 try {
                     keys = new String[(fields.length - REQUEST_FIELD_END_INDEX) / 2];
                     values = new String[keys.length];
                 } catch (NegativeArraySizeException e) {
+                    Log.e(LOG_TAG, "RequestType is AddResource, but the message doesn't contain any keys nor resources");
                     return;
                 }
                 try {
@@ -158,6 +196,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                         values[i] = fields[j++];
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
+                    Log.e(LOG_TAG, "RequestType is AddResource, but the message doesn't contain any keys nor resources");
                     return;
                 }
                 for (int i = 0; i < keys.length; i++) {
@@ -166,16 +205,23 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 break;
             }
             case RemoveResource: {
-                if (senderIsNotSubscriber) return;
+                if (senderIsNotSubscriber) {
+                    Log.e(LOG_TAG, "RemoveResource received by peer who's not part of our network");
+                    return;
+                }
                 // the last field is the only one which can possibly contain a backslash as its last
                 // character, if it does then the message we received is garbage because keys and
                 // resources cannot have a backslash as their last character
                 String lastField = fields[fields.length - 1];
-                if (lastField.charAt(lastField.length() - 1) == '\\') return;
+                if (lastField.charAt(lastField.length() - 1) == '\\') {
+                    Log.e(LOG_TAG, "RemoveResource message contains an invalid resource");
+                    return;
+                }
                 try {
                     for (int i = REQUEST_FIELD_END_INDEX; i < fields.length; i++)
                         dictionary.removeResourceFromSMS(fields[i]);
                 } catch (ArrayIndexOutOfBoundsException e) {
+                    Log.e(LOG_TAG, "RequestType is RemoveResource, but the message doesn't contain any keys of resources to be removed");
                     return;
                 }
                 break;
