@@ -39,15 +39,15 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
      * Field 0 contains the {@link RequestType} of the request contained in this message.
      * The rest of the message varies depending on the {@link RequestType}:
      * <ul>
-     * <li>Invite: there are no other fields</li>
-     * <li>AcceptInvitation: there are no other fields</li>
-     * <li>AddPeer: fields from 1 to the last one contain the phone numbers of each
+     * <li>{@code Invite}: there are no other fields</li>
+     * <li>{@code AcceptInvitation}: there are no other fields</li>
+     * <li>{@code AddPeer}: fields from 1 to the last one contain the phone numbers of each
      * {@link com.eis.smslibrary.SMSPeer} we have to add to our network</li>
-     * <li>QuitNetwork: there are no other fields, because this request can only be sent by the
+     * <li>{@code QuitNetwork}: there are no other fields, because this request can only be sent by the
      * {@link com.eis.smslibrary.SMSPeer} who wants to be removed</li>
-     * <li>AddResource: starting from 1, fields with odd numbers contain keys, their following
+     * <li>{@code AddResource}: starting from 1, fields with odd numbers contain keys, their following
      * (even) field contains the corresponding value</li>
-     * <li>RemoveResource: fields from 1 to the last one contain the keys to remove</li>
+     * <li>{@code RemoveResource}: fields from 1 to the last one contain the keys to remove</li>
      * </ul>
      *
      * @param message The message passed by {@link com.eis.smslibrary.SMSReceivedBroadcastReceiver}.
