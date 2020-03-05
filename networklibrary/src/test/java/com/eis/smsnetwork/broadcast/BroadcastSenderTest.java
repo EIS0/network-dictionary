@@ -1,6 +1,8 @@
-package com.eis.smsnetwork;
+package com.eis.smsnetwork.broadcast;
 
 import com.eis.smslibrary.SMSPeer;
+import com.eis.smsnetwork.SMSNetSubscriberList;
+import com.eis.smsnetwork.SMSNetSubscriberListTest;
 
 import org.junit.Before;
 
