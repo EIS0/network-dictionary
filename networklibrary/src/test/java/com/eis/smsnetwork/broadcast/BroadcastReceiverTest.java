@@ -306,7 +306,8 @@ public class BroadcastReceiverTest {
         String expectedMySubscribersText =
                 RequestType.AddPeer.asString() + FIELD_SEPARATOR + subscriber;
         String expectedMyDictionaryText = RequestType.AddResource.asString() + FIELD_SEPARATOR +
-                "Key¤This is a valid resource¤OtherKey¤This is another valid resource";
+                "Key" + FIELD_SEPARATOR + "This is a valid resource" + FIELD_SEPARATOR + "OtherKey"
+                + FIELD_SEPARATOR + "This is another valid resource";
         String expectedAddPeerTextForSubscribers =
                 RequestType.AddPeer.asString() + FIELD_SEPARATOR + sender;
 
@@ -314,8 +315,9 @@ public class BroadcastReceiverTest {
         SMSNetSubscriberList mockSubscribers = mock(SMSNetSubscriberList.class);
         when(mockSubscribers.getSubscribers()).thenReturn(subscribersSet);
         SMSNetDictionary mockDictionary = mock(SMSNetDictionary.class);
-        when(mockDictionary.getAllKeyResourcePairsForSMS()).thenReturn("Key¤This is a valid " +
-                "resource¤OtherKey¤This is another valid resource");
+        when(mockDictionary.getAllKeyResourcePairsForSMS()).thenReturn("Key" + FIELD_SEPARATOR +
+                "This is a valid resource" + FIELD_SEPARATOR + "OtherKey" + FIELD_SEPARATOR +
+                "This is another valid resource");
         SMSJoinableNetManager mockNetworkManager = mock(SMSJoinableNetManager.class);
         when(mockNetworkManager.getNetSubscriberList()).thenReturn(mockSubscribers);
         when(mockNetworkManager.getNetDictionary()).thenReturn(mockDictionary);
@@ -776,7 +778,7 @@ public class BroadcastReceiverTest {
         BroadcastReceiver instance = new BroadcastReceiver();
         SMSPeer sender = new SMSPeer("+393492794133");
         String correctText =
-                RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat " + "is on" +
+                RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                         FIELD_SEPARATOR + "the table";
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
