@@ -147,7 +147,7 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * @return A String where every backslash preceding an occurrence of
      * {@link com.eis.smsnetwork.broadcast.BroadcastReceiver#FIELD_SEPARATOR} was removed.
      */
-    public static String removeEscapes(@NonNull String string) {
+    static String removeEscapes(@NonNull String string) {
         String toReplaceRegex = Matcher.quoteReplacement("\\" + BroadcastReceiver.FIELD_SEPARATOR);
         return string.replaceAll(toReplaceRegex, BroadcastReceiver.FIELD_SEPARATOR);
     }
@@ -171,6 +171,7 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      *                                  last character.
      */
     private static void checkValidity(@NonNull String string) {
+        //noinspection ConstantConditions
         if (string == null)
             throw new IllegalArgumentException("The given key or resource is null!");
         if (string.matches("\\p{all}*\\\\$"))

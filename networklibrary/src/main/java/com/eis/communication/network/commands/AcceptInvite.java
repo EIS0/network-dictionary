@@ -20,7 +20,8 @@ public abstract class AcceptInvite<I extends Invitation> extends Command {
      * @param invitation The Invitation to a network.
      * @throws IllegalArgumentException If the parameter is null.
      */
-    public AcceptInvite(@NonNull I invitation) {
+    protected AcceptInvite(@NonNull I invitation) {
+        //noinspection ConstantConditions
         if (invitation == null) throw new IllegalArgumentException();
         this.invitation = invitation;
     }

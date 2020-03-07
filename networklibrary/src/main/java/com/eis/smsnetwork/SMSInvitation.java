@@ -16,6 +16,7 @@ public class SMSInvitation implements Invitation<SMSPeer> {
      * @throws IllegalArgumentException If the parameter is null.
      */
     public SMSInvitation(@NonNull SMSPeer inviter) {
+        //noinspection ConstantConditions
         if (inviter == null) throw new IllegalArgumentException();
         this.inviter = inviter;
     }

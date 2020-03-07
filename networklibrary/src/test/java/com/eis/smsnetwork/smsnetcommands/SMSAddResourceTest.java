@@ -1,6 +1,5 @@
 package com.eis.smsnetwork.smsnetcommands;
 
-import com.eis.communication.network.commands.AddResource;
 import com.eis.communication.network.commands.CommandExecutor;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.SMSNetworkManager;
@@ -13,12 +12,12 @@ import static org.junit.Assert.*;
 
 public class SMSAddResourceTest {
 
-    private SMSNetworkManager networkManager = SMSJoinableNetManager.getInstance();
+    private final SMSNetworkManager networkManager = SMSJoinableNetManager.getInstance();
 
-    private String key = "key";
-    private String value = "value";
+    private final String key = "key";
+    private final String value = "value";
 
-    private SMSAddResource addResource = new SMSAddResource(key, value);
+    private final SMSAddResource addResource = new SMSAddResource(key, value);
 
     @Test
     public void execute() {

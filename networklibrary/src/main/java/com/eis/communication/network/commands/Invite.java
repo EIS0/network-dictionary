@@ -12,14 +12,14 @@ import com.eis.communication.Peer;
  */
 public abstract class Invite<P extends Peer> extends Command {
 
-    protected P invitedPeer;
+    protected final P invitedPeer;
 
     /**
      * Constructor for the Invite command, requires data to work.
      *
      * @param invitedPeer The {@link Peer} to invite to the network.
      */
-    public Invite(@NonNull P invitedPeer) {
+    protected Invite(@NonNull P invitedPeer) {
         this.invitedPeer = invitedPeer;
     }
 

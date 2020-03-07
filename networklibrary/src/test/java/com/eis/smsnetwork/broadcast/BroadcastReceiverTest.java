@@ -40,9 +40,9 @@ import static com.eis.smsnetwork.broadcast.BroadcastReceiver.FIELD_SEPARATOR;
 @PrepareForTest({SMSJoinableNetManager.class, SMSManager.class, Log.class})
 public class BroadcastReceiverTest {
 
-    private BroadcastReceiver instance = new BroadcastReceiver();
-    private SMSPeer sender = new SMSPeer("+393492794133");
-    private SMSPeer subscriber = new SMSPeer("+393332734121");
+    private final BroadcastReceiver instance = new BroadcastReceiver();
+    private final SMSPeer sender = new SMSPeer("+393492794133");
+    private final SMSPeer subscriber = new SMSPeer("+393332734121");
 
     @Captor
     ArgumentCaptor<SMSInvitation> invitationCaptor;

@@ -35,11 +35,11 @@ import java.util.Set;
  */
 public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer, SMSFailReason> {
 
-    private NetSubscriberList<SMSPeer> netSubscribers = new SMSNetSubscriberList();
+    private final NetSubscriberList<SMSPeer> netSubscribers = new SMSNetSubscriberList();
     private NetDictionary<String, String> netDictionary = new SMSNetDictionary();
-    private Set<SMSPeer> invitedPeers = new HashSet<>();
+    private final Set<SMSPeer> invitedPeers = new HashSet<>();
 
-    private String LOG_KEY = "NET_MANAGER";
+    private final String LOG_KEY = "NET_MANAGER";
 
     /**
      * @return netSubscribers

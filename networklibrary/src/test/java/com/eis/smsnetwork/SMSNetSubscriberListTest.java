@@ -5,8 +5,6 @@ import com.eis.smslibrary.SMSPeer;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-
 import static org.junit.Assert.assertArrayEquals;
 
 /**
@@ -21,17 +19,10 @@ public class SMSNetSubscriberListTest {
     public static final SMSPeer PEER2 = new SMSPeer("+393423541602");
     public static final SMSPeer PEER3 = new SMSPeer("+393423541603");
 
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private final ArrayList<SMSPeer> totalPeers = new ArrayList<>();
-
     private SMSNetSubscriberList netSubscribers;
 
     @Before
     public void setup() {
-        totalPeers.add(PEER1);
-        totalPeers.add(PEER2);
-        totalPeers.add(PEER3);
-
         netSubscribers = new SMSNetSubscriberList();
     }
 

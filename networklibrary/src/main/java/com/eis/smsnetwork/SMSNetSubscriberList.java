@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class SMSNetSubscriberList implements NetSubscriberList<SMSPeer> {
 
-    private Set<SMSPeer> subscribers = new HashSet<>();
+    private final Set<SMSPeer> subscribers = new HashSet<>();
 
     /**
      * Adds a subscriber to this network
@@ -26,6 +26,7 @@ public class SMSNetSubscriberList implements NetSubscriberList<SMSPeer> {
      * @throws IllegalArgumentException If subscriber is null
      */
     public void addSubscriber(@NonNull final SMSPeer subscriber) {
+        //noinspection ConstantConditions
         if (subscriber == null) throw new IllegalArgumentException("Cannot add a null peer!");
         subscribers.add(subscriber);
     }

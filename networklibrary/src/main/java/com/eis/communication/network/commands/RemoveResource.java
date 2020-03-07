@@ -2,8 +2,6 @@ package com.eis.communication.network.commands;
 
 import androidx.annotation.NonNull;
 
-import com.eis.communication.network.NetDictionary;
-
 /**
  * Command to remove a resource from the local network dictionary.
  * A network dictionary is a dictionary containing key-resource pairs.
@@ -23,7 +21,7 @@ public abstract class RemoveResource<K> extends Command {
      *
      * @param key           The key identifier of the resource to remove
      */
-    public RemoveResource(@NonNull K key) {
+    protected RemoveResource(@NonNull K key) {
         this.key = key;
     }
 

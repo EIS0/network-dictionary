@@ -57,11 +57,13 @@ public class SMSAcceptInviteTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void nullInvitation() {
+        //noinspection ConstantConditions
         CommandExecutor.execute(new SMSAcceptInvite(null));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void nullInviter() {
+        //noinspection ConstantConditions
         SMSInvitation invitation = new SMSInvitation(null);
         CommandExecutor.execute(new SMSAcceptInvite(invitation));
     }

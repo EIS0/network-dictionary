@@ -1,9 +1,6 @@
 package com.eis.communication.network.commands;
 
-import androidx.annotation.NonNull;
-
 import com.eis.communication.Peer;
-import com.eis.communication.network.NetSubscriberList;
 
 /**
  * Command to quit a network, which is, removing myself from the network I'm in
@@ -17,7 +14,7 @@ public abstract class QuitNetwork<T extends Peer> extends Command {
     /**
      * Constructor for the QuitNetwork command.
      */
-    public QuitNetwork() {
+    protected QuitNetwork() {
     }
 
     /**

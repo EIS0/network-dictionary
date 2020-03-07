@@ -2,8 +2,6 @@ package com.eis.communication.network.commands;
 
 import androidx.annotation.NonNull;
 
-import com.eis.communication.network.NetDictionary;
-
 /**
  * Command to add a resource to the net dictionary
  *
@@ -22,7 +20,7 @@ public abstract class AddResource<K, R> extends Command {
      * @param key           The key of the resource to add
      * @param value         The value of the resource to add
      */
-    public AddResource(@NonNull K key, @NonNull R value) {
+    protected AddResource(@NonNull K key, @NonNull R value) {
         this.key = key;
         this.value = value;
     }

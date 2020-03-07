@@ -3,7 +3,6 @@ package com.eis.communication.network.commands;
 import androidx.annotation.NonNull;
 
 import com.eis.communication.Peer;
-import com.eis.communication.network.NetSubscriberList;
 
 /**
  * Command to add a peer to the Subscribers list
@@ -22,7 +21,8 @@ public abstract class AddPeer<T extends Peer> extends Command {
      * @param peer           The Peer to add to the network
      * @throws IllegalArgumentException If the parameter is null
      */
-    public AddPeer(@NonNull T peer) {
+    protected AddPeer(@NonNull T peer) {
+        //noinspection ConstantConditions
         if (peer == null) throw new IllegalArgumentException();
         this.peer = peer;
     }

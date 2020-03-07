@@ -2,7 +2,6 @@ package com.eis.smsnetwork.smsnetcommands;
 
 import androidx.annotation.NonNull;
 
-import com.eis.communication.network.NetDictionary;
 import com.eis.smsnetwork.RequestType;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.SMSNetDictionary;

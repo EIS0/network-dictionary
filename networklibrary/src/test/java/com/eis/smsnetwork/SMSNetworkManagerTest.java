@@ -30,25 +30,22 @@ public class SMSNetworkManagerTest {
 
     private SMSJoinableNetManager networkManager;
     private SMSNetDictionary localDictionary;
-    private SMSNetSubscriberList localSubscribers;
 
-    private String KEY1 = "Key1";
-    private String RES1 = "Res1";
-    private String RES2 = "Res2";
-    private SMSPeer VALID_PEER = new SMSPeer("+393479281192");
+    private final String KEY1 = "Key1";
+    private final String RES1 = "Res1";
+    private final String RES2 = "Res2";
+    private final SMSPeer VALID_PEER = new SMSPeer("+393479281192");
 
-    private boolean hasPassed = false;
-    private GetResourceListener<String, String, SMSFailReason> getListenerMock = mock(GetResourceListener.class);
-    private SetResourceListener setListenerMock = mock(SetResourceListener.class);
-    private RemoveResourceListener removeListenerMock = mock(RemoveResourceListener.class);
-    private InviteListener inviteListenerMock = mock(InviteListener.class);
+    private final GetResourceListener<String, String, SMSFailReason> getListenerMock = mock(GetResourceListener.class);
+    private final SetResourceListener setListenerMock = mock(SetResourceListener.class);
+    private final RemoveResourceListener removeListenerMock = mock(RemoveResourceListener.class);
+    private final InviteListener inviteListenerMock = mock(InviteListener.class);
 
     @Before
     public void setup() {
         networkManager = SMSJoinableNetManager.getInstance();
         networkManager.clear();
         localDictionary = (SMSNetDictionary) networkManager.getNetDictionary();
-        localSubscribers = (SMSNetSubscriberList) networkManager.getNetSubscriberList();
     }
 
     @Test
@@ -114,7 +111,7 @@ public class SMSNetworkManagerTest {
 
     //TODO mock SMSHandler
     @Test
-    public void invite_succeded() {
+    public void invite_succeeded() {
         //SMSHandler smsHandler = mock(SMSHandler.class);
         //when(smsHandler.getInstance()).thenReturn(smsHandler);
         //networkManager.invite(VALID_PEER, inviteListenerMock);

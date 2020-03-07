@@ -20,15 +20,15 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @PrepareForTest({SMSManager.class})
 public class SMSQuitNetworkTest {
 
-    private SMSPeer peer1 = new SMSPeer("+393408140326");
-    private SMSPeer peer2 = new SMSPeer("+393408140366");
+    private final SMSPeer peer1 = new SMSPeer("+393408140326");
+    private final SMSPeer peer2 = new SMSPeer("+393408140366");
 
     private SMSJoinableNetManager networkManager = SMSJoinableNetManager.getInstance();
 
-    private SMSAddPeer addPeer1 = new SMSAddPeer(peer1);
-    private SMSAddPeer addPeer2 = new SMSAddPeer(peer2);
+    private final SMSAddPeer addPeer1 = new SMSAddPeer(peer1);
+    private final SMSAddPeer addPeer2 = new SMSAddPeer(peer2);
 
-    private SMSQuitNetwork removePeer1 = new SMSQuitNetwork();
+    private final SMSQuitNetwork removePeer1 = new SMSQuitNetwork();
 
     @Before
     public void setUp() {

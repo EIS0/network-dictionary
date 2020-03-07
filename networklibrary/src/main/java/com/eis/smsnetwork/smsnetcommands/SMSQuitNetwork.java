@@ -1,8 +1,5 @@
 package com.eis.smsnetwork.smsnetcommands;
 
-import androidx.annotation.NonNull;
-
-import com.eis.communication.network.NetSubscriberList;
 import com.eis.communication.network.commands.QuitNetwork;
 import com.eis.smslibrary.SMSPeer;
 import com.eis.smsnetwork.RequestType;

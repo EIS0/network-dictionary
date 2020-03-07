@@ -23,8 +23,8 @@ import static org.junit.Assert.*;
 @PrepareForTest({BroadcastSender.class})
 public class SMSAddPeerTest {
 
-    private SMSPeer peerToAdd = new SMSPeer("+393408140326");
-    private SMSJoinableNetManager networkManager = SMSJoinableNetManager.getInstance();
+    private final SMSPeer peerToAdd = new SMSPeer("+393408140326");
+    private final SMSJoinableNetManager networkManager = SMSJoinableNetManager.getInstance();
 
     @Test
     public void addPeer() {
@@ -42,6 +42,7 @@ public class SMSAddPeerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addNullPeer() {
+        //noinspection ConstantConditions
         CommandExecutor.execute(new SMSAddPeer(null));
     }
 }
