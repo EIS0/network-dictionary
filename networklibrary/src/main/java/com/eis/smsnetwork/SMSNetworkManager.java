@@ -77,7 +77,7 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     public void setResource(String key, String value, SetResourceListener<String, String,
             SMSFailReason> setResourceListener) {
         try {
-            CommandExecutor.execute(new SMSAddResource(key, value, netDictionary));
+            CommandExecutor.execute(new SMSAddResource(key, value));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             setResourceListener.onResourceSetFail(key, value, SMSFailReason.MESSAGE_SEND_ERROR);

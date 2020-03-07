@@ -23,10 +23,9 @@ public class SMSAddResource extends com.eis.communication.network.commands.AddRe
      *
      * @param key           The key of the resource to add
      * @param value         The value of the resource to add
-     * @param netDictionary The dictionary to add the resource in
      */
-    public SMSAddResource(@NonNull String key, @NonNull String value, @NonNull NetDictionary<String, String> netDictionary) {
-        super(key, value, netDictionary);
+    public SMSAddResource(@NonNull String key, @NonNull String value) {
+        super(key, value);
     }
 
     /**
@@ -36,7 +35,7 @@ public class SMSAddResource extends com.eis.communication.network.commands.AddRe
      *                                  character.
      */
     protected void execute() {
-        netDictionary.addResource(key, value);
+        SMSJoinableNetManager.getInstance().getNetDictionary().addResource(key, value);
         String addResourceMessage = RequestType.AddResource.asString() +
                 BroadcastReceiver.FIELD_SEPARATOR + SMSNetDictionary.addEscapes(key) +
                 BroadcastReceiver.FIELD_SEPARATOR + SMSNetDictionary.addEscapes(value);

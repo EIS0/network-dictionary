@@ -15,19 +15,16 @@ public abstract class AddResource<K, R> extends Command {
 
     protected final K key;
     protected final R value;
-    protected final NetDictionary<K, R> netDictionary;
 
     /**
      * Constructor for the AddResource command, needs the data to operate
      *
      * @param key           The key of the resource to add
      * @param value         The value of the resource to add
-     * @param netDictionary The dictionary to add the resource in
      */
-    public AddResource(@NonNull K key, @NonNull R value, @NonNull NetDictionary<K, R> netDictionary) {
+    public AddResource(@NonNull K key, @NonNull R value) {
         this.key = key;
         this.value = value;
-        this.netDictionary = netDictionary;
     }
 
     /**

@@ -3,6 +3,7 @@ package com.eis.smsnetwork.smsnetcommands;
 import com.eis.communication.network.commands.AddResource;
 import com.eis.communication.network.commands.CommandExecutor;
 import com.eis.communication.network.commands.RemoveResource;
+import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.SMSNetworkManager;
 import com.eis.smsnetwork.smsnetcommands.SMSAddResource;
 import com.eis.smsnetwork.smsnetcommands.SMSRemoveResource;
@@ -14,7 +15,7 @@ import static org.junit.Assert.*;
 
 public class SMSRemoveResourceTest {
 
-    private SMSNetworkManager networkManager = new SMSNetworkManager();
+    private SMSNetworkManager networkManager = SMSJoinableNetManager.getInstance();
 
     private String key1 = "key";
     private String value1 = "value";
@@ -22,8 +23,8 @@ public class SMSRemoveResourceTest {
     private String key2 = "lmao";
     private String value2 = "fuck";
 
-    private SMSAddResource addResource1 = new SMSAddResource(key1, value1, networkManager.getNetDictionary());
-    private SMSAddResource addResource2 = new SMSAddResource(key2, value2, networkManager.getNetDictionary());
+    private SMSAddResource addResource1 = new SMSAddResource(key1, value1);
+    private SMSAddResource addResource2 = new SMSAddResource(key2, value2);
     private SMSRemoveResource removeResource = new SMSRemoveResource(key1, networkManager.getNetDictionary());
     @Before
     public void setUp(){
