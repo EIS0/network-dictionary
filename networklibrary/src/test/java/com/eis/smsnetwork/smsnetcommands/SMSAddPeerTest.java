@@ -1,9 +1,11 @@
 package com.eis.smsnetwork.smsnetcommands;
 
 import com.eis.communication.network.commands.CommandExecutor;
-import com.eis.smslibrary.SMSManager;
 import com.eis.smslibrary.SMSPeer;
-import com.eis.smsnetwork.SMSNetworkManager;
+import com.eis.smsnetwork.RequestType;
+import com.eis.smsnetwork.SMSJoinableNetManager;
+import com.eis.smsnetwork.broadcast.BroadcastReceiver;
+import com.eis.smsnetwork.broadcast.BroadcastSender;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,23 +14,34 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
 
+/**
+ * @author Marco Cognolato
+ * @author Giovanni Velludo
+ */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SMSManager.class})
+@PrepareForTest({BroadcastSender.class})
 public class SMSAddPeerTest {
 
-    private SMSPeer peer = new SMSPeer("+393408140326");
-    private SMSNetworkManager networkManager = new SMSNetworkManager();
-    private SMSAddPeer addPeer = new SMSAddPeer(peer, networkManager.getNetSubscriberList());
+    private SMSPeer peerToAdd = new SMSPeer("+393408140326");
+    private SMSJoinableNetManager networkManager = SMSJoinableNetManager.getInstance();
 
     @Test
-    public void execute() {
-        SMSManager mockManager = mock(SMSManager.class);
-        PowerMockito.mockStatic(SMSManager.class);
-        when(SMSManager.getInstance()).thenReturn(mockManager);
-        CommandExecutor.execute(addPeer);
-        assertTrue(networkManager.getNetSubscriberList().getSubscribers().contains(peer));
+    public void addPeer() {
+        String expectedMessage = RequestType.AddPeer.asString() + BroadcastReceiver.FIELD_SEPARATOR
+                + peerToAdd.getAddress();
+        PowerMockito.mockStatic(BroadcastSender.class);
+
+        CommandExecutor.execute(new SMSAddPeer(peerToAdd));
+
+        assertTrue(networkManager.getNetSubscriberList().getSubscribers().contains(peerToAdd));
+        PowerMockito.verifyStatic();
+        BroadcastSender.broadcastMessage(networkManager.getNetSubscriberList().getSubscribers(),
+                expectedMessage);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addNullPeer() {
+        CommandExecutor.execute(new SMSAddPeer(null));
     }
 }

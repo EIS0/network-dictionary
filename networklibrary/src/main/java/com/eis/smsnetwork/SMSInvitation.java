@@ -1,5 +1,7 @@
 package com.eis.smsnetwork;
 
+import androidx.annotation.NonNull;
+
 import com.eis.communication.network.Invitation;
 import com.eis.smslibrary.SMSPeer;
 
@@ -9,7 +11,12 @@ import com.eis.smslibrary.SMSPeer;
 public class SMSInvitation implements Invitation<SMSPeer> {
     private SMSPeer inviter;
 
-    public SMSInvitation(SMSPeer inviter) {
+    /**
+     * @param inviter The {@link SMSPeer} who sent the invitation.
+     * @throws IllegalArgumentException If the parameter is null.
+     */
+    public SMSInvitation(@NonNull SMSPeer inviter) {
+        if (inviter == null) throw new IllegalArgumentException();
         this.inviter = inviter;
     }
 

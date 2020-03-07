@@ -15,17 +15,16 @@ import com.eis.communication.network.NetSubscriberList;
 public abstract class AddPeer<T extends Peer> extends Command {
 
     protected final T peer;
-    protected final NetSubscriberList<T> netSubscribers;
 
     /**
      * AddPeer command constructor, receives the data it needs to operate on.
      *
      * @param peer           The Peer to add to the network
-     * @param netSubscribers The subscribers to notify of the newest member
+     * @throws IllegalArgumentException If the parameter is null
      */
-    public AddPeer(@NonNull T peer, @NonNull NetSubscriberList<T> netSubscribers) {
+    public AddPeer(@NonNull T peer) {
+        if (peer == null) throw new IllegalArgumentException();
         this.peer = peer;
-        this.netSubscribers = netSubscribers;
     }
 
     /**

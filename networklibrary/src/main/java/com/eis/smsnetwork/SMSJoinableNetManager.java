@@ -51,7 +51,7 @@ public class SMSJoinableNetManager extends SMSNetworkManager
      */
     @Override
     public void acceptJoinInvitation(Invitation invitation) {
-        CommandExecutor.execute(new SMSAcceptInvite((SMSInvitation)invitation, instance));
+        CommandExecutor.execute(new SMSAcceptInvite((SMSInvitation)invitation));
     }
 
     /**
@@ -78,13 +78,5 @@ public class SMSJoinableNetManager extends SMSNetworkManager
             Log.d("JOINABLE_NET", "Listener IS set, accepting manually");
             invitationListener.onJoinInvitationReceived(invitation);
         }
-    }
-
-    /**
-     * Clears the state of the network
-     */
-    public void clear(){
-        super.getNetSubscriberList().getSubscribers().clear();
-        super.getNetDictionary().clear();
     }
 }

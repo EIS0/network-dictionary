@@ -40,9 +40,12 @@ import static com.eis.smsnetwork.broadcast.BroadcastReceiver.FIELD_SEPARATOR;
 @PrepareForTest({SMSJoinableNetManager.class, SMSManager.class, Log.class})
 public class BroadcastReceiverTest {
 
+    private BroadcastReceiver instance = new BroadcastReceiver();
+    private SMSPeer sender = new SMSPeer("+393492794133");
+    private SMSPeer subscriber = new SMSPeer("+393332734121");
+
     @Captor
     ArgumentCaptor<SMSInvitation> invitationCaptor;
-
     @Captor
     ArgumentCaptor<SMSMessage> messageCaptor;
 
@@ -87,8 +90,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_garbage_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         SMSMessage garbage = new SMSMessage(sender, "aidsajfksda;ds");
 
         SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
@@ -107,8 +108,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_emptyMessage_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         SMSMessage garbage = new SMSMessage(sender, "");
 
         SMSJoinableNetManager mockManager = mock(SMSJoinableNetManager.class);
@@ -128,8 +127,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_inviteWithGarbage_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.Invite.asString() + ">";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
 
@@ -149,8 +146,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_inviteWithUnneededFields_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.Invite.asString() + FIELD_SEPARATOR + ">";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
 
@@ -170,8 +165,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_correctInvite() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText = RequestType.Invite.asString();
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -196,9 +189,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_acceptInvitationFromUninvited_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
-        SMSPeer subscriber = new SMSPeer("+393332734121");
         String correctText = RequestType.AcceptInvitation.asString();
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -228,9 +218,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_acceptInvitationWithGarbage_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
-        SMSPeer subscriber = new SMSPeer("+393332734121");
         String garbageText = RequestType.AcceptInvitation.asString() + "P";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -261,9 +248,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_acceptInvitationWithUnneededFields_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
-        SMSPeer subscriber = new SMSPeer("+393332734121");
         String garbageText = RequestType.AcceptInvitation.asString() + FIELD_SEPARATOR + "P";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -294,9 +278,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_correctAcceptInvitation() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
-        SMSPeer subscriber = new SMSPeer("+393332734121");
         String correctText = RequestType.AcceptInvitation.asString();
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -347,8 +328,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_quitNetworkWithGarbage_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.QuitNetwork.asString() + ">";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -372,8 +351,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_quitNetworkWithUnneededFields_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.QuitNetwork.asString() + FIELD_SEPARATOR + ">";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -397,8 +374,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_quitNetworkFromNonSubscriber_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.QuitNetwork.asString() + FIELD_SEPARATOR + ">";
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -421,8 +396,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_correctQuitNetwork() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText = RequestType.QuitNetwork.asString();
         SMSMessage correctMessage = new SMSMessage(sender, correctText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -446,8 +419,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addPeerFromNonSubscriber_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText =
                 RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" + FIELD_SEPARATOR
                         + "+393338512123";
@@ -472,8 +443,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addPeerWithWrongNumber_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText =
                 RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" + FIELD_SEPARATOR
                         + "+0000333812123";
@@ -499,8 +468,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addPeerWithNoPeers_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText =
                 RequestType.AddPeer.asString() + FIELD_SEPARATOR + "" + FIELD_SEPARATOR;
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
@@ -525,8 +492,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_correctAddPeer() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText =
                 RequestType.AddPeer.asString() + FIELD_SEPARATOR + "+393478512584" + FIELD_SEPARATOR
                         + "+39333812123";
@@ -553,8 +518,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addResourceWithNoResources_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.AddResource.asString();
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -579,8 +542,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addResourceFromNonSubscriber_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText =
                 RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                 FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
@@ -607,8 +568,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addResourceWithKeyButNoAssociatedResource_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText =
                 RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                         FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is";
@@ -635,8 +594,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_addResourceWithInvalidResource_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText =
                 RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                         FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
@@ -664,8 +621,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_correctAddResource() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText =
                 RequestType.AddResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                         FIELD_SEPARATOR + "the table" + FIELD_SEPARATOR + "the book is" +
@@ -694,8 +649,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_removeResourceWithNoResources_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText = RequestType.RemoveResource.asString();
         SMSMessage garbageMessage = new SMSMessage(sender, garbageText);
         Set<SMSPeer> subscribersSet = new HashSet<>();
@@ -720,8 +673,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_removeResourceFromNonSubscriber_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText =
                 RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                 FIELD_SEPARATOR + "the table";
@@ -747,8 +698,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_removeResourceWithInvalidKey_isIgnored() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String garbageText =
                 RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                         FIELD_SEPARATOR + "the table\\";
@@ -775,8 +724,6 @@ public class BroadcastReceiverTest {
      */
     @Test
     public void onMessageReceived_correctRemoveResource() {
-        BroadcastReceiver instance = new BroadcastReceiver();
-        SMSPeer sender = new SMSPeer("+393492794133");
         String correctText =
                 RequestType.RemoveResource.asString() + FIELD_SEPARATOR + "the cat is on" +
                         FIELD_SEPARATOR + "the table";

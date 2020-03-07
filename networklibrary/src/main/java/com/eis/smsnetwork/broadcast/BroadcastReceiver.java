@@ -114,7 +114,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 SMSManager.getInstance().sendMessage(myDictionaryMessage);
 
                 // Broadcasting to the previous subscribers the new subscriber
-                CommandExecutor.execute(new SMSAddPeer(sender, subscribers));
+                CommandExecutor.execute(new SMSAddPeer(sender));
                 // Updating my local subscribers list
                 subscribers.addSubscriber(sender);
             }

@@ -13,7 +13,7 @@ import com.eis.communication.Peer;
 public interface Invitation<P extends Peer> {
 
     /**
-     * @return The address of who sent this invitation.
+     * @return The {@link Peer} who sent this invitation.
      */
     P getInviterPeer();
 

@@ -192,4 +192,12 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
                     }
                 });
     }
+
+    /**
+     * Clears the state of the network
+     */
+    public void clear(){
+        this.getNetSubscriberList().getSubscribers().clear();
+        this.getNetDictionary().clear();
+    }
 }

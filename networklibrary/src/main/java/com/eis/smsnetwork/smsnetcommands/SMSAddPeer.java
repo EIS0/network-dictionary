@@ -2,9 +2,10 @@ package com.eis.smsnetwork.smsnetcommands;
 
 import androidx.annotation.NonNull;
 
-import com.eis.communication.network.NetSubscriberList;
 import com.eis.smslibrary.SMSPeer;
 import com.eis.smsnetwork.RequestType;
+import com.eis.smsnetwork.SMSJoinableNetManager;
+import com.eis.smsnetwork.SMSNetSubscriberList;
 import com.eis.smsnetwork.broadcast.BroadcastReceiver;
 import com.eis.smsnetwork.broadcast.BroadcastSender;
 
@@ -20,17 +21,19 @@ public class SMSAddPeer extends com.eis.communication.network.commands.AddPeer<S
     /**
      * SMSAddPeer command constructor, receives the data it needs to operate on.
      *
-     * @param peer           The SMSPeer to add to the network
-     * @param netSubscribers The subscribers to notify of the newest member
+     * @param peer           The SMSPeer to add to the network.
+     * @throws IllegalArgumentException If the parameter is null.
      */
-    public SMSAddPeer(@NonNull SMSPeer peer, @NonNull NetSubscriberList<SMSPeer> netSubscribers) {
-        super(peer, netSubscribers);
+    public SMSAddPeer(@NonNull SMSPeer peer) {
+        super(peer);
     }
 
     /**
-     * Adds the peer to the subscribers list and broadcasts it to the net
+     * Adds the peer to the subscribers list and broadcasts it to the net.
      */
     protected void execute() {
+        SMSNetSubscriberList netSubscribers = (SMSNetSubscriberList) SMSJoinableNetManager
+                .getInstance().getNetSubscriberList();
         netSubscribers.addSubscriber(peer);
         String addPeerMessage = RequestType.AddPeer.asString() + BroadcastReceiver.FIELD_SEPARATOR +
                 peer.getAddress();

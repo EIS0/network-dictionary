@@ -18,23 +18,24 @@ import com.eis.smsnetwork.SMSJoinableNetManager;
  */
 public class SMSAcceptInvite extends com.eis.communication.network.commands.AcceptInvite<SMSInvitation> {
 
-    SMSJoinableNetManager netManager;
-
     /**
-     * Constructor for SMSAcceptInvite command, requires data to work
+     * Constructor for SMSAcceptInvite command, requires data to work.
      *
-     * @param invitation The SMSInvitation to a network
-     * @param netManager A valid SMSJoinableNetManager, used by the command
+     * @param invitation The SMSInvitation to a network.
+     * @throws IllegalArgumentException If the parameter is null.
      */
-    public SMSAcceptInvite(@NonNull SMSInvitation invitation, @NonNull SMSJoinableNetManager netManager) {
+    public SMSAcceptInvite(@NonNull SMSInvitation invitation) {
         super(invitation);
-        this.netManager = netManager;
     }
 
+    /**
+     * Quits the current network (if we're part of one), adds the inviter to our network and
+     * notifies them of the fact that we accepted their invitation.
+     */
     protected void execute() {
         SMSPeer inviter = invitation.getInviterPeer();
-        SMSJoinableNetManager instance = SMSJoinableNetManager.getInstance();
-        CommandExecutor.execute(new SMSQuitNetwork(instance.getNetSubscriberList(), instance));
+        SMSJoinableNetManager netManager = SMSJoinableNetManager.getInstance();
+        CommandExecutor.execute(new SMSQuitNetwork(netManager.getNetSubscriberList(), netManager));
         netManager.getNetSubscriberList().addSubscriber(inviter);
         SMSManager.getInstance().sendMessage(new SMSMessage(inviter, RequestType.AcceptInvitation.asString()));
         Log.d("ACCEPTINVITE_COMMAND", "Accepting invite from: " + inviter);
