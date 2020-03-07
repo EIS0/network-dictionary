@@ -135,7 +135,7 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     @Override
     public void invite(SMSPeer peer, InviteListener<SMSPeer, SMSFailReason> inviteListener) {
         try {
-            CommandExecutor.execute(new SMSInvite(peer, this));
+            CommandExecutor.execute(new SMSInvite(peer));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             inviteListener.onInvitationNotSent(peer, SMSFailReason.MESSAGE_SEND_ERROR);

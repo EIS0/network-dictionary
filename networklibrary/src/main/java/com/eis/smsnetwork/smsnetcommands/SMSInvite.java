@@ -9,7 +9,7 @@ import com.eis.smslibrary.SMSManager;
 import com.eis.smslibrary.SMSMessage;
 import com.eis.smslibrary.SMSPeer;
 import com.eis.smsnetwork.RequestType;
-import com.eis.smsnetwork.SMSNetworkManager;
+import com.eis.smsnetwork.SMSJoinableNetManager;
 
 /**
  * @author Marco Cognolato
@@ -17,17 +17,13 @@ import com.eis.smsnetwork.SMSNetworkManager;
  */
 public class SMSInvite extends Invite<SMSPeer> {
 
-    private SMSNetworkManager netManager;
-
     /**
      * Constructor for the SMSInvite command, requires data to work.
      *
      * @param invitedPeer The {@link SMSPeer} to invite to the network.
-     * @param netManager A valid SMSJoinableNetManager, used by the command.
      */
-    public SMSInvite(@NonNull SMSPeer invitedPeer, @NonNull SMSNetworkManager netManager) {
+    public SMSInvite(@NonNull SMSPeer invitedPeer) {
         super(invitedPeer);
-        this.netManager = netManager;
     }
 
     /**
@@ -38,6 +34,6 @@ public class SMSInvite extends Invite<SMSPeer> {
         SMSMessage messageToSend = new SMSMessage(invitedPeer, message);
         SMSManager.getInstance().sendMessage(messageToSend);
         Log.d("SMSINVITE_COMMAND", "Invitation Sent to: " + invitedPeer);
-        netManager.getInvitedPeers().add(invitedPeer);
+        SMSJoinableNetManager.getInstance().getInvitedPeers().add(invitedPeer);
     }
 }
