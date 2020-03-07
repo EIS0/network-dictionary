@@ -116,7 +116,7 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     public void removeResource(String key,
                                RemoveResourceListener<String, SMSFailReason> removeResourceListener) {
         try {
-            CommandExecutor.execute(new SMSRemoveResource(key, netDictionary));
+            CommandExecutor.execute(new SMSRemoveResource(key));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             removeResourceListener.onResourceRemoveFail(key, SMSFailReason.MESSAGE_SEND_ERROR);

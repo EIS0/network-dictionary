@@ -25,7 +25,7 @@ public class SMSRemoveResourceTest {
 
     private SMSAddResource addResource1 = new SMSAddResource(key1, value1);
     private SMSAddResource addResource2 = new SMSAddResource(key2, value2);
-    private SMSRemoveResource removeResource = new SMSRemoveResource(key1, networkManager.getNetDictionary());
+    private SMSRemoveResource removeResource = new SMSRemoveResource(key1);
     @Before
     public void setUp(){
         CommandExecutor.execute(addResource1);

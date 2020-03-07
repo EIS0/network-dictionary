@@ -2,7 +2,6 @@ package com.eis.smsnetwork.smsnetcommands;
 
 import androidx.annotation.NonNull;
 
-import com.eis.communication.network.NetDictionary;
 import com.eis.smsnetwork.RequestType;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.SMSNetDictionary;
@@ -16,16 +15,15 @@ import com.eis.smsnetwork.broadcast.BroadcastSender;
  * @author Marco Cognolato
  * @author Giovanni Velludo
  */
-public class SMSRemoveResource extends com.eis.communication.network.commands.RemoveResource<String, String> {
+public class SMSRemoveResource extends com.eis.communication.network.commands.RemoveResource<String> {
 
     /**
      * Constructor for the SMSRemoveResource command, needs the data to operate
      *
      * @param key           The key identifier of the resource to remove
-     * @param netDictionary The dictionary to remove the resource from
      */
-    public SMSRemoveResource(@NonNull String key, @NonNull NetDictionary<String, String> netDictionary) {
-        super(key, netDictionary);
+    public SMSRemoveResource(@NonNull String key) {
+        super(key);
     }
 
     /**
@@ -35,7 +33,7 @@ public class SMSRemoveResource extends com.eis.communication.network.commands.Re
      *                                  character.
      */
     protected void execute() {
-        netDictionary.removeResource(key);
+        SMSJoinableNetManager.getInstance().getNetDictionary().removeResource(key);
         String removeResourceMessage =
                 RequestType.RemoveResource.asString() + BroadcastReceiver.FIELD_SEPARATOR +
                         SMSNetDictionary.addEscapes(key);
