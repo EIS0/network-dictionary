@@ -18,26 +18,20 @@ import com.eis.smsnetwork.broadcast.BroadcastSender;
  */
 public class SMSQuitNetwork extends QuitNetwork<SMSPeer> {
 
-    SMSJoinableNetManager netManager;
-
     /**
-     * Constructor for the SMSQuitNetwork command, needs the data to operate
-     *
-     * @param netSubscribers The subscribers currently in the network
-     * @param netManager A valid SMSJoinableNetManager, used by the command
+     * Constructor for the SMSQuitNetwork command.
      */
-    public SMSQuitNetwork(@NonNull NetSubscriberList<SMSPeer> netSubscribers,
-                          @NonNull SMSJoinableNetManager netManager) {
-        super(netSubscribers);
-        this.netManager = netManager;
+    SMSQuitNetwork() {
+        super();
     }
 
     /**
-     * Removes myself from the subscribers list and broadcasts it to the net
+     * Removes myself from the subscribers list and broadcasts it to the net.
      */
     protected void execute() {
-        netManager.clear();
         String quitNetworkMessage = RequestType.QuitNetwork.asString();
-        BroadcastSender.broadcastMessage(netSubscribers.getSubscribers(), quitNetworkMessage);
+        BroadcastSender.broadcastMessage(SMSJoinableNetManager.getInstance().getNetSubscriberList()
+                .getSubscribers(), quitNetworkMessage);
+        SMSJoinableNetManager.getInstance().clear();
     }
 }

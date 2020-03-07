@@ -14,19 +14,14 @@ import com.eis.communication.network.NetSubscriberList;
  */
 public abstract class QuitNetwork<T extends Peer> extends Command {
 
-    protected final NetSubscriberList<T> netSubscribers;
-
     /**
-     * Constructor for the QuitNetwork command, needs the data to operate
-     *
-     * @param netSubscribers The subscribers currently in the network
+     * Constructor for the QuitNetwork command.
      */
-    public QuitNetwork(@NonNull NetSubscriberList<T> netSubscribers) {
-        this.netSubscribers = netSubscribers;
+    public QuitNetwork() {
     }
 
     /**
-     * Removes myself from the subscribers list and broadcasts it to the net
+     * Removes myself from the subscribers list and broadcasts it to the net.
      */
     protected abstract void execute();
 

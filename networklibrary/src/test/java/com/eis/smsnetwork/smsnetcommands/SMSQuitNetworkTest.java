@@ -28,7 +28,7 @@ public class SMSQuitNetworkTest {
     private SMSAddPeer addPeer1 = new SMSAddPeer(peer1);
     private SMSAddPeer addPeer2 = new SMSAddPeer(peer2);
 
-    private SMSQuitNetwork removePeer1 = new SMSQuitNetwork(networkManager.getNetSubscriberList(), networkManager);
+    private SMSQuitNetwork removePeer1 = new SMSQuitNetwork();
 
     @Before
     public void setUp() {
