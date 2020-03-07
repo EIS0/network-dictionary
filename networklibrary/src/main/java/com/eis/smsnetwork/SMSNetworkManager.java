@@ -20,7 +20,7 @@ import com.eis.smslibrary.SMSMessageHandler;
 import com.eis.smslibrary.SMSPeer;
 import com.eis.smsnetwork.broadcast.BroadcastReceiver;
 import com.eis.smsnetwork.smsnetcommands.SMSAddResource;
-import com.eis.smsnetwork.smsnetcommands.SMSSendInvitation;
+import com.eis.smsnetwork.smsnetcommands.SMSInvite;
 import com.eis.smsnetwork.smsnetcommands.SMSRemoveResource;
 
 import java.util.HashSet;
@@ -128,15 +128,14 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     /**
      * Starts an invite operation to the net
      *
-     * @param peer           The address of the user to invite to join the network.
+     * @param peer           The {@link SMSPeer} to invite to join the network.
      * @param inviteListener Listener called on user invited or on fail.
      * @author Marco Cognolato
      */
     @Override
     public void invite(SMSPeer peer, InviteListener<SMSPeer, SMSFailReason> inviteListener) {
         try {
-            SMSInvitation invitation = new SMSInvitation(peer);
-            CommandExecutor.execute(new SMSSendInvitation(invitation, this));
+            CommandExecutor.execute(new SMSInvite(peer, this));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             inviteListener.onInvitationNotSent(peer, SMSFailReason.MESSAGE_SEND_ERROR);
