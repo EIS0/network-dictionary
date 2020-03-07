@@ -20,7 +20,7 @@ public class SMSRemoveResource extends com.eis.communication.network.commands.Re
     /**
      * Constructor for the SMSRemoveResource command, needs the data to operate
      *
-     * @param key           The key identifier of the resource to remove
+     * @param key The key identifier of the resource to remove
      */
     public SMSRemoveResource(@NonNull String key) {
         super(key);
@@ -29,8 +29,8 @@ public class SMSRemoveResource extends com.eis.communication.network.commands.Re
     /**
      * Removes a Resource from the dictionary, then broadcasts it to the net
      *
-     * @throws IllegalArgumentException if fields key or value contain a backslash as their last
-     *                                  character.
+     * @throws IllegalArgumentException if the key passed in the constructor contains a backslash as
+     *                                  their last character.
      */
     protected void execute() {
         SMSJoinableNetManager.getInstance().getNetDictionary().removeResource(key);

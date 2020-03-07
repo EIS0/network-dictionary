@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="EntryPointsManager">
+    <pattern value="com.eis.communication.network.Command" method="execute" />
+    <pattern value="com.eis.smsnetwork.SMSNetworkManager" method="setNetDictionary" />
+    <pattern value="com.eis.smsnetwork.SMSNetworkManager" method="setNetSubscriberList" />
+  </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" value="$USER_HOME$/Documents/javadoc" />
     <option name="OPTION_SCOPE" value="private" />

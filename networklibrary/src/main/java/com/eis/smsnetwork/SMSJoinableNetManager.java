@@ -2,6 +2,8 @@ package com.eis.smsnetwork;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.eis.communication.network.Invitation;
 import com.eis.communication.network.JoinableNetworkManager;
 import com.eis.communication.network.commands.CommandExecutor;
@@ -48,9 +50,10 @@ public class SMSJoinableNetManager extends SMSNetworkManager
      * if you want to accept an invitation
      *
      * @param invitation The invitation previously received.
+     * @throws IllegalArgumentException If the parameter is null.
      */
     @Override
-    public void acceptJoinInvitation(Invitation invitation) {
+    public void acceptJoinInvitation(@NonNull Invitation invitation) {
         CommandExecutor.execute(new SMSAcceptInvite((SMSInvitation)invitation));
     }
 

@@ -21,6 +21,7 @@ public class SMSInvite extends Invite<SMSPeer> {
      * Constructor for the SMSInvite command, requires data to work.
      *
      * @param invitedPeer The {@link SMSPeer} to invite to the network.
+     * @throws IllegalArgumentException if the parameter is null.
      */
     public SMSInvite(@NonNull SMSPeer invitedPeer) {
         super(invitedPeer);

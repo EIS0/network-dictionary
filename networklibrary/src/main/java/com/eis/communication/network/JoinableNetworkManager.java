@@ -1,5 +1,7 @@
 package com.eis.communication.network;
 
+import androidx.annotation.NonNull;
+
 import com.eis.communication.Peer;
 import com.eis.communication.network.listeners.JoinInvitationListener;
 
@@ -15,8 +17,9 @@ public interface JoinableNetworkManager<RK, RV, P extends Peer, FR extends FailR
      * Method used to join the network after an invitation in received.
      *
      * @param invitation The invitation previously received.
+     * @throws IllegalArgumentException If the parameter is null.
      */
-    void acceptJoinInvitation(I invitation);
+    void acceptJoinInvitation(@NonNull I invitation);
 
     /**
      * Sets the listener used to wait for invitations to join the network.

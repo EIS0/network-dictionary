@@ -67,19 +67,21 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * Starts a setResource request to the net
      *
      * @param key                 The key identifier for the resource. It cannot have a backslash as
-     *                            its last character.
+     *                            its last character and cannot be null.
      * @param value               The identified value of the resource.It cannot have a backslash as
-     *                            its last character.
+     *                            its last character and cannot be null.
      * @param setResourceListener Listener called on resource successfully saved or on fail.
      * @author Marco Cognolato
      */
     @Override
-    public void setResource(String key, String value, SetResourceListener<String, String,
-            SMSFailReason> setResourceListener) {
+    public void setResource(@NonNull String key, @NonNull String value,
+                            SetResourceListener<String, String, SMSFailReason> setResourceListener) {
         try {
             CommandExecutor.execute(new SMSAddResource(key, value));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
+            //TODO: the error could be that the key or value are invalid, so SMSFailReason
+            // shouldn't be MESSAGE_SEND_ERROR in this case
             setResourceListener.onResourceSetFail(key, value, SMSFailReason.MESSAGE_SEND_ERROR);
             return;
         }
@@ -90,15 +92,16 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * Starts a getResource request to the net
      *
      * @param key                 The key identifier for the resource. It cannot have a backslash as
-     *                            its last character.
+     *                            its last character and cannot be null.
      * @param getResourceListener Listener called on resource successfully retrieved or on fail.
      * @author Marco Cognolato
      */
     @Override
-    public void getResource(String key,
-                            GetResourceListener<String, String, SMSFailReason> getResourceListener) {
+    public void getResource(@NonNull String key, GetResourceListener<String, String,
+            SMSFailReason> getResourceListener) {
         String resource = netDictionary.getResource(key);
-        if (resource != null) getResourceListener.onGetResource(key, resource);
+        if (resource != null)
+            getResourceListener.onGetResource(key, resource);
         else {
             getResourceListener.onGetResourceFailed(key, SMSFailReason.NO_RESOURCE);
         }
@@ -108,17 +111,19 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * Starts a remove resource request to the net
      *
      * @param key                    The key identifier for the resource. It cannot have a backslash
-     *                               as its last character.
+     *                               as its last character and cannot be null.
      * @param removeResourceListener Listener called on resource successfully removed or on fail.
      * @author Marco Cognolato
      */
     @Override
-    public void removeResource(String key,
+    public void removeResource(@NonNull String key,
                                RemoveResourceListener<String, SMSFailReason> removeResourceListener) {
         try {
             CommandExecutor.execute(new SMSRemoveResource(key));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
+            //TODO: the error could be that the key is invalid, so SMSFailReason shouldn't be
+            // MESSAGE_SEND_ERROR in this case
             removeResourceListener.onResourceRemoveFail(key, SMSFailReason.MESSAGE_SEND_ERROR);
             return;
         }
@@ -128,16 +133,19 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     /**
      * Starts an invite operation to the net
      *
-     * @param peer           The {@link SMSPeer} to invite to join the network.
+     * @param peer           The {@link SMSPeer} to invite to join the network, it cannot be null.
      * @param inviteListener Listener called on user invited or on fail.
      * @author Marco Cognolato
      */
     @Override
-    public void invite(SMSPeer peer, InviteListener<SMSPeer, SMSFailReason> inviteListener) {
+    public void invite(@NonNull SMSPeer peer,
+                       InviteListener<SMSPeer, SMSFailReason> inviteListener) {
         try {
             CommandExecutor.execute(new SMSInvite(peer));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
+            //TODO: the error could be that the peer is null, so SMSFailReason shouldn't be
+            // MESSAGE_SEND_ERROR in this case
             inviteListener.onInvitationNotSent(peer, SMSFailReason.MESSAGE_SEND_ERROR);
             return;
         }
@@ -145,8 +153,7 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     }
 
     /**
-     * Sets a given list of subscribers, to provide the network
-     * with your own implementation
+     * Sets a given list of subscribers, to provide the network with your own implementation
      *
      * @param list A NetSubscriberList of type <SMSPeer> to provide
      */
@@ -156,8 +163,7 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     }
 
     /**
-     * Sets a given dictionary of resources, to provide the network
-     * with your own implementation
+     * Sets a given dictionary of resources, to provide the network with your own implementation
      *
      * @param dictionary A NetDictionary of type <String,String> to provide
      */
@@ -173,29 +179,29 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     public void setup(Context context) {
         SMSManager.getInstance().setReceivedListener(BroadcastReceiver.class,
                 context.getApplicationContext());
-        SMSMessageHandler.getInstance()
-                .setMessageParseStrategy(new MessageParseStrategy<String, SMSPeer, SMSMessage>() {
-                    private final String HIDDEN_CHARACTER = "¤";
+        SMSMessageHandler.getInstance().setMessageParseStrategy(new MessageParseStrategy<String,
+                SMSPeer, SMSMessage>() {
+            private final String HIDDEN_CHARACTER = "¤";
 
-                    @Override
-                    public SMSMessage parseMessage(String channelData, SMSPeer channelPeer) {
-                        if (!channelData.startsWith(HIDDEN_CHARACTER))
-                            return null;
-                        String messageData = channelData.substring(1);
-                        return new SMSMessage(channelPeer, messageData);
-                    }
+            @Override
+            public SMSMessage parseMessage(String channelData, SMSPeer channelPeer) {
+                if (!channelData.startsWith(HIDDEN_CHARACTER))
+                    return null;
+                String messageData = channelData.substring(1);
+                return new SMSMessage(channelPeer, messageData);
+            }
 
-                    @Override
-                    public String parseData(SMSMessage message) {
-                        return HIDDEN_CHARACTER + message.getData();
-                    }
-                });
+            @Override
+            public String parseData(SMSMessage message) {
+                return HIDDEN_CHARACTER + message.getData();
+            }
+        });
     }
 
     /**
      * Clears the state of the network
      */
-    public void clear(){
+    public void clear() {
         this.getNetSubscriberList().getSubscribers().clear();
         this.getNetDictionary().clear();
     }

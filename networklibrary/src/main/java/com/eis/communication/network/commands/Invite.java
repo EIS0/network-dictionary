@@ -18,8 +18,11 @@ public abstract class Invite<P extends Peer> extends Command {
      * Constructor for the Invite command, requires data to work.
      *
      * @param invitedPeer The {@link Peer} to invite to the network.
+     * @throws IllegalArgumentException if the parameter is null.
      */
     protected Invite(@NonNull P invitedPeer) {
+        //noinspection ConstantConditions
+        if (invitedPeer == null) throw new IllegalArgumentException();
         this.invitedPeer = invitedPeer;
     }
 
