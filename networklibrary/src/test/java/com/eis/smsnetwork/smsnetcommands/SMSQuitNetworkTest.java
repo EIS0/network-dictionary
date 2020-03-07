@@ -1,47 +1,42 @@
 package com.eis.smsnetwork.smsnetcommands;
 
 import com.eis.communication.network.commands.CommandExecutor;
-import com.eis.smslibrary.SMSManager;
 import com.eis.smslibrary.SMSPeer;
+import com.eis.smsnetwork.RequestType;
 import com.eis.smsnetwork.SMSJoinableNetManager;
+import com.eis.smsnetwork.broadcast.BroadcastSender;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SMSManager.class})
+@PrepareForTest({BroadcastSender.class})
 public class SMSQuitNetworkTest {
 
-    private final SMSPeer peer1 = new SMSPeer("+393408140326");
-    private final SMSPeer peer2 = new SMSPeer("+393408140366");
-
-    private SMSJoinableNetManager networkManager = SMSJoinableNetManager.getInstance();
-
-    private final SMSAddPeer addPeer1 = new SMSAddPeer(peer1);
-    private final SMSAddPeer addPeer2 = new SMSAddPeer(peer2);
-
-    private final SMSQuitNetwork removePeer1 = new SMSQuitNetwork();
-
-    @Before
-    public void setUp() {
-        SMSManager mockManager = mock(SMSManager.class);
-        mockStatic(SMSManager.class);
-        when(SMSManager.getInstance()).thenReturn(mockManager);
-        CommandExecutor.execute(addPeer1);
-        CommandExecutor.execute(addPeer2);
-    }
-
     @Test
-    public void execute() {
-        CommandExecutor.execute(removePeer1);
+    public void quitNetwork() {
+        SMSPeer peer1 = new SMSPeer("+393408140326");
+        SMSPeer peer2 = new SMSPeer("+393408140366");
+        Set<SMSPeer> addedPeers = new HashSet<>();
+        addedPeers.add(peer1);
+        addedPeers.add(peer2);
+        SMSJoinableNetManager.getInstance().getNetSubscriberList().addSubscriber(peer1);
+        SMSJoinableNetManager.getInstance().getNetSubscriberList().addSubscriber(peer2);
+        mockStatic(BroadcastSender.class);
+
+        CommandExecutor.execute(new SMSQuitNetwork());
+
         assertTrue(SMSJoinableNetManager.getInstance().getNetSubscriberList().getSubscribers().isEmpty());
+        verifyStatic();
+        BroadcastSender.broadcastMessage(addedPeers, RequestType.QuitNetwork.asString());
     }
 }
