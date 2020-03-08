@@ -6,6 +6,8 @@ import com.eis.smsnetwork.RequestType;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.broadcast.BroadcastSender;
 
+import java.util.Set;
+
 /**
  * Command to quit the current network.
  *
@@ -27,8 +29,9 @@ public class SMSQuitNetwork extends QuitNetwork<SMSPeer> {
      */
     protected void execute() {
         String quitNetworkMessage = RequestType.QuitNetwork.asString();
-        BroadcastSender.broadcastMessage(SMSJoinableNetManager.getInstance().getNetSubscriberList()
-                .getSubscribers(), quitNetworkMessage);
+        Set<SMSPeer> subscribers =
+                SMSJoinableNetManager.getInstance().getNetSubscriberList().getSubscribers();
+        BroadcastSender.broadcastMessage(subscribers, quitNetworkMessage);
         SMSJoinableNetManager.getInstance().clear();
     }
 }
