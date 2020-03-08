@@ -17,9 +17,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @RunWith(PowerMockRunner.class)
@@ -33,20 +31,28 @@ public class SMSQuitNetworkTest {
     public void quitNetwork() {
         SMSPeer peer1 = new SMSPeer("+393408140326");
         SMSPeer peer2 = new SMSPeer("+393408140366");
-        String quitNetworkMessage = RequestType.QuitNetwork.asString();
         SMSJoinableNetManager.getInstance().getNetSubscriberList().addSubscriber(peer1);
         SMSJoinableNetManager.getInstance().getNetSubscriberList().addSubscriber(peer2);
-        Set<SMSPeer> subscribers = SMSJoinableNetManager.getInstance().getNetSubscriberList().getSubscribers();
+        // we manually copy peers to this set instead of simply calling SMSJoinableNetManager
+        // .getInstance().getNetSubscriberList().getSubscribers() because in that case we would
+        // get a pointer to the list of subscribers, which is cleared after the execution of
+        // SMSQuitNetwork. What we want though is the list of subscribers before the execution of
+        // that command.
+        Set<SMSPeer> subscribers =
+                new HashSet<>(SMSJoinableNetManager.getInstance().getNetSubscriberList()
+                        .getSubscribers());
+        String quitNetworkMessage = RequestType.QuitNetwork.asString();
         SMSManager mockManager = Mockito.mock(SMSManager.class);
         PowerMockito.mockStatic(SMSManager.class);
         PowerMockito.when(SMSManager.getInstance()).thenReturn(mockManager);
 
         CommandExecutor.execute(new SMSQuitNetwork());
 
-        Assert.assertTrue(SMSJoinableNetManager.getInstance().getNetSubscriberList().getSubscribers()
-                .isEmpty());
+        Assert.assertTrue(SMSJoinableNetManager.getInstance().getNetSubscriberList()
+                .getSubscribers().isEmpty());
         // verifying that a message was sent for each subscriber
-        Mockito.verify(mockManager, Mockito.times(2)).sendMessage(messageCaptor.capture());
+        Mockito.verify(mockManager, Mockito.times(subscribers.size())).sendMessage(
+                messageCaptor.capture());
         // verifying that the message sent is the same as quitNetworkMessage
         for (SMSMessage sentMessage : messageCaptor.getAllValues()) {
             Assert.assertEquals(quitNetworkMessage, sentMessage.getData());

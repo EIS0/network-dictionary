@@ -29,9 +29,8 @@ public class SMSQuitNetwork extends QuitNetwork<SMSPeer> {
      */
     protected void execute() {
         String quitNetworkMessage = RequestType.QuitNetwork.asString();
-        Set<SMSPeer> subscribers =
-                SMSJoinableNetManager.getInstance().getNetSubscriberList().getSubscribers();
-        BroadcastSender.broadcastMessage(subscribers, quitNetworkMessage);
+        BroadcastSender.broadcastMessage(SMSJoinableNetManager.getInstance().getNetSubscriberList()
+                .getSubscribers(), quitNetworkMessage);
         SMSJoinableNetManager.getInstance().clear();
     }
 }
