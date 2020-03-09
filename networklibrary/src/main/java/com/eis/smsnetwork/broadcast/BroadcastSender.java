@@ -23,6 +23,7 @@ public class BroadcastSender {
     public static void broadcastMessage(Set<SMSPeer> receivers, String textMessage) {
         //Naive implementation of a broadcast: this node sends a message to each subscriber
         for (SMSPeer peer : receivers) {
+            if (peer.getInvalidityReason() != null) continue;
             SMSMessage message = new SMSMessage(peer, textMessage);
             SMSManager.getInstance().sendMessage(message);
         }

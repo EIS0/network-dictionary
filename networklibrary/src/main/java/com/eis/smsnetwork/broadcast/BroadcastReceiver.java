@@ -62,6 +62,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
             return;
         }
         SMSPeer sender = message.getPeer();
+        if (sender.getInvalidityReason() != null) return;
         SMSNetSubscriberList subscribers =
                 (SMSNetSubscriberList) SMSJoinableNetManager.getInstance().getNetSubscriberList();
         SMSNetDictionary dictionary =
@@ -125,12 +126,12 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 }
                 SMSPeer[] peersToAdd;
                 peersToAdd = new SMSPeer[fields.length - FIELD_1_INDEX];
-                try {
-                    for (int i = FIELD_1_INDEX; i < fields.length; i++)
-                        peersToAdd[i - FIELD_1_INDEX] = new SMSPeer(fields[i]);
-                } catch (InvalidTelephoneNumberException e) {
-                    Log.e(LOG_TAG, "Peers to be added have an invalid phone number");
-                    return;
+                for (int i = FIELD_1_INDEX; i < fields.length; i++) {
+                    peersToAdd[i - FIELD_1_INDEX] = new SMSPeer(fields[i]);
+                    if (peersToAdd[i - FIELD_1_INDEX].getInvalidityReason() != null) {
+                        Log.e(LOG_TAG, "Peers to be added have an invalid phone number");
+                        return;
+                    }
                 }
                 for (SMSPeer peer : peersToAdd)
                     subscribers.addSubscriber(peer);

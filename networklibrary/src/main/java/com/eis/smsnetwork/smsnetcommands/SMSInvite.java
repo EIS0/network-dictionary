@@ -33,6 +33,7 @@ public class SMSInvite extends Invite<SMSPeer> {
     protected void execute() {
         String message = RequestType.Invite.asString();
         SMSMessage messageToSend = new SMSMessage(invitedPeer, message);
+        if (invitedPeer.getInvalidityReason() != null) return;
         SMSManager.getInstance().sendMessage(messageToSend);
         Log.d("SMSINVITE_COMMAND", "Invitation Sent to: " + invitedPeer);
         SMSJoinableNetManager.getInstance().getInvitedPeers().add(invitedPeer);
