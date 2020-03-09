@@ -12,6 +12,7 @@ import com.eis.smslibrary.SMSPeer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -36,13 +37,20 @@ public class SMSNetworkManagerTest {
     private final String RES2 = "Res2";
     private final SMSPeer VALID_PEER = new SMSPeer("+393479281192");
 
-    private final GetResourceListener<String, String, SMSFailReason> getListenerMock = mock(GetResourceListener.class);
-    private final SetResourceListener setListenerMock = mock(SetResourceListener.class);
-    private final RemoveResourceListener removeListenerMock = mock(RemoveResourceListener.class);
-    private final InviteListener inviteListenerMock = mock(InviteListener.class);
+    @Mock
+    private GetResourceListener<String, String, SMSFailReason> getListenerMock;
+    @Mock
+    private SetResourceListener<String, String, SMSFailReason> setListenerMock;
+    @Mock
+    private RemoveResourceListener<String, SMSFailReason> removeListenerMock;
+    @Mock
+    private InviteListener<SMSPeer, SMSFailReason> inviteListenerMock;
 
     @Before
     public void setup() {
+        PowerMockito.mockStatic(Log.class);
+        when(Log.d(anyString(), anyString())).thenReturn(0);
+        when(Log.e(anyString(), anyString())).thenReturn(0);
         networkManager = SMSJoinableNetManager.getInstance();
         networkManager.clear();
         localDictionary = (SMSNetDictionary) networkManager.getNetDictionary();
@@ -69,14 +77,14 @@ public class SMSNetworkManagerTest {
     @Test
     public void getResource_notAvailable() {
         networkManager.getResource(KEY1, getListenerMock);
-        verify(getListenerMock, times(1)).onGetResourceFailed(KEY1, SMSFailReason.NO_RESOURCE);
+        verify(getListenerMock).onGetResourceFailed(KEY1, SMSFailReason.NO_RESOURCE);
     }
 
     @Test
     public void setResource_available() {
         localDictionary.addResource(KEY1, RES1);
         networkManager.setResource(KEY1, RES2, setListenerMock);
-        verify(setListenerMock, times(1)).onResourceSet(KEY1, RES2);
+        verify(setListenerMock).onResourceSet(KEY1, RES2);
     }
 
     @Test
@@ -95,7 +103,7 @@ public class SMSNetworkManagerTest {
     public void removeResource_available() {
         localDictionary.addResource(KEY1, RES1);
         networkManager.removeResource(KEY1, removeListenerMock);
-        verify(removeListenerMock, times(1)).onResourceRemoved(KEY1);
+        verify(removeListenerMock).onResourceRemoved(KEY1);
     }
 
     @Test
@@ -103,24 +111,21 @@ public class SMSNetworkManagerTest {
      * The system is not able to send the message
      */
     public void invite_failed() {
-        PowerMockito.mockStatic(Log.class);
-        when(Log.e(anyString(), anyString())).thenReturn(0);
         networkManager.invite(VALID_PEER, inviteListenerMock);
-        verify(inviteListenerMock, times(1)).onInvitationNotSent(VALID_PEER, SMSFailReason.MESSAGE_SEND_ERROR);
+        verify(inviteListenerMock).onInvitationNotSent(VALID_PEER, SMSFailReason.MESSAGE_SEND_ERROR);
     }
 
-    //TODO mock SMSHandler
     @Test
     public void invite_succeeded() {
-        //SMSHandler smsHandler = mock(SMSHandler.class);
-        //when(smsHandler.getInstance()).thenReturn(smsHandler);
-        //networkManager.invite(VALID_PEER, inviteListenerMock);
+        SMSManager mockManager = mock(SMSManager.class);
+        mockStatic(SMSManager.class);
+        when(SMSManager.getInstance()).thenReturn(mockManager);
+        networkManager.invite(VALID_PEER, inviteListenerMock);
+        verify(inviteListenerMock).onInvitationSent(VALID_PEER);
     }
 
     @Test
     public void acceptJoinInvitation() {
-        PowerMockito.mockStatic(Log.class);
-        when(Log.d(anyString(), anyString())).thenReturn(0);
         SMSManager mockManager = mock(SMSManager.class);
         mockStatic(SMSManager.class);
         when(SMSManager.getInstance()).thenReturn(mockManager);
