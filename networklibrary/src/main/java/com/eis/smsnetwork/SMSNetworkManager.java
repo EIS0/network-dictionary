@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.eis.communication.MessageParseStrategy;
 import com.eis.communication.network.commands.CommandExecutor;
@@ -75,17 +76,21 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      */
     @Override
     public void setResource(@NonNull String key, @NonNull String value,
-                            SetResourceListener<String, String, SMSFailReason> setResourceListener) {
+                            @Nullable SetResourceListener<String, String, SMSFailReason>
+                                    setResourceListener) {
         try {
             CommandExecutor.execute(new SMSAddResource(key, value));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             //TODO: the error could be that the key or value are invalid, so SMSFailReason
             // shouldn't be MESSAGE_SEND_ERROR in this case
-            setResourceListener.onResourceSetFail(key, value, SMSFailReason.MESSAGE_SEND_ERROR);
+            if (setResourceListener != null) {
+                setResourceListener.onResourceSetFail(key, value, SMSFailReason.MESSAGE_SEND_ERROR);
+            }
             return;
         }
-        setResourceListener.onResourceSet(key, value);
+        if (setResourceListener != null)
+            setResourceListener.onResourceSet(key, value);
     }
 
     /**
@@ -97,13 +102,15 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * @author Marco Cognolato
      */
     @Override
-    public void getResource(@NonNull String key, GetResourceListener<String, String,
+    public void getResource(@NonNull String key, @Nullable GetResourceListener<String, String,
             SMSFailReason> getResourceListener) {
         String resource = netDictionary.getResource(key);
-        if (resource != null)
-            getResourceListener.onGetResource(key, resource);
-        else {
-            getResourceListener.onGetResourceFailed(key, SMSFailReason.NO_RESOURCE);
+        if (getResourceListener != null) {
+            if (resource != null)
+                getResourceListener.onGetResource(key, resource);
+            else {
+                getResourceListener.onGetResourceFailed(key, SMSFailReason.NO_RESOURCE);
+            }
         }
     }
 
@@ -116,18 +123,20 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      * @author Marco Cognolato
      */
     @Override
-    public void removeResource(@NonNull String key,
-                               RemoveResourceListener<String, SMSFailReason> removeResourceListener) {
+    public void removeResource(@NonNull String key, @Nullable RemoveResourceListener<String,
+            SMSFailReason> removeResourceListener) {
         try {
             CommandExecutor.execute(new SMSRemoveResource(key));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             //TODO: the error could be that the key is invalid, so SMSFailReason shouldn't be
             // MESSAGE_SEND_ERROR in this case
-            removeResourceListener.onResourceRemoveFail(key, SMSFailReason.MESSAGE_SEND_ERROR);
+            if (removeResourceListener != null)
+                removeResourceListener.onResourceRemoveFail(key, SMSFailReason.MESSAGE_SEND_ERROR);
             return;
         }
-        removeResourceListener.onResourceRemoved(key);
+        if (removeResourceListener != null)
+            removeResourceListener.onResourceRemoved(key);
     }
 
     /**
@@ -139,17 +148,19 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
      */
     @Override
     public void invite(@NonNull SMSPeer peer,
-                       InviteListener<SMSPeer, SMSFailReason> inviteListener) {
+                       @Nullable InviteListener<SMSPeer, SMSFailReason> inviteListener) {
         try {
             CommandExecutor.execute(new SMSInvite(peer));
         } catch (Exception e) {
             Log.e(LOG_KEY, "There's been an error: " + e);
             //TODO: the error could be that the peer is null, so SMSFailReason shouldn't be
             // MESSAGE_SEND_ERROR in this case
-            inviteListener.onInvitationNotSent(peer, SMSFailReason.MESSAGE_SEND_ERROR);
+            if (inviteListener != null)
+                inviteListener.onInvitationNotSent(peer, SMSFailReason.MESSAGE_SEND_ERROR);
             return;
         }
-        inviteListener.onInvitationSent(peer);
+        if (inviteListener != null)
+            inviteListener.onInvitationSent(peer);
     }
 
     /**

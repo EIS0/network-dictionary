@@ -12,16 +12,16 @@ import com.eis.smslibrary.SMSPeer;
 import com.eis.smsnetwork.smsnetcommands.SMSAcceptInvite;
 
 /**
- * Concrete JoinableNetwork for SMS Messages
- * If a listener is NOT set (using {@link #setJoinInvitationListener(JoinInvitationListener)})
- * the method {@link #acceptJoinInvitation(Invitation)} will be called automatically,
- * else you should call that from the listener if you want to accept an invitation
+ * Concrete JoinableNetwork for SMS Messages. If a listener is NOT set (using {@link
+ * #setJoinInvitationListener(JoinInvitationListener)}) the method {@link
+ * #acceptJoinInvitation(Invitation)} will be called automatically, else you should call that from
+ * the listener if you want to accept an invitation
  *
  * @author Marco Cognolato
  * @author Giovanni Velludo
  */
-public class SMSJoinableNetManager extends SMSNetworkManager
-        implements JoinableNetworkManager<String, String, SMSPeer, SMSFailReason, Invitation<SMSPeer>> {
+public class SMSJoinableNetManager extends SMSNetworkManager implements JoinableNetworkManager<
+        String, String, SMSPeer, SMSFailReason, Invitation<SMSPeer>> {
 
     private static SMSJoinableNetManager instance;
 
@@ -39,37 +39,42 @@ public class SMSJoinableNetManager extends SMSNetworkManager
      * @return the only instance of SMSNetworkManager.
      */
     public static SMSJoinableNetManager getInstance() {
-        if (instance == null) instance = new SMSJoinableNetManager();
+        if (instance == null)
+            instance = new SMSJoinableNetManager();
         return instance;
     }
 
     /**
-     * Accepts a given join invitation.
-     * If a listener is NOT set (using {@link #setJoinInvitationListener(JoinInvitationListener)})
-     * this method will be called automatically, else you should call this from the listener
-     * if you want to accept an invitation
+     * Accepts a given join invitation. If a listener is NOT set (using {@link
+     * #setJoinInvitationListener(JoinInvitationListener)}) this method will be called
+     * automatically, else you should call this from the listener if you want to accept an
+     * invitation
      *
      * @param invitation The invitation previously received.
      * @throws IllegalArgumentException If the parameter is null.
      */
     @Override
     public void acceptJoinInvitation(@NonNull Invitation invitation) {
-        CommandExecutor.execute(new SMSAcceptInvite((SMSInvitation)invitation));
+        CommandExecutor.execute(new SMSAcceptInvite((SMSInvitation) invitation));
     }
 
     /**
      * Sets a listener waiting for network invitations
      *
-     * @param joinInvitationListener Listener called upon invitation received.
+     * @param joinInvitationListener Listener called upon invitation received. It cannot be null.
+     * @throws IllegalArgumentException If the parameter is null.
      */
     @Override
-    public void setJoinInvitationListener(JoinInvitationListener<Invitation<SMSPeer>> joinInvitationListener) {
+    public void setJoinInvitationListener(
+            @NonNull JoinInvitationListener<Invitation<SMSPeer>> joinInvitationListener) {
+        //noinspection ConstantConditions
+        if (joinInvitationListener == null) throw new IllegalArgumentException();
         invitationListener = joinInvitationListener;
     }
 
     /**
-     * When an invitation in received separates between auto accepting and forwarding it to the
-     * user depending if a listener was set by the user
+     * When an invitation in received separates between auto accepting and forwarding it to the user
+     * depending if a listener was set by the user
      *
      * @param invitation The invitation received
      */

@@ -6,8 +6,6 @@ import com.eis.smsnetwork.RequestType;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smsnetwork.broadcast.BroadcastSender;
 
-import java.util.Set;
-
 /**
  * Command to quit the current network.
  *

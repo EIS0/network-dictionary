@@ -55,6 +55,7 @@ public class SMSInviteTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void inviteNullPeer() {
+        //noinspection ConstantConditions
         CommandExecutor.execute(new SMSInvite(null));
     }
 }
