@@ -28,7 +28,7 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * @param key      The key which defines the resource
      * @param resource The resource to add
      * @throws IllegalArgumentException if one of the arguments contains a backslash as its last
-     *                                  character.
+     *                                  character or is null.
      */
     public void addResource(@NonNull String key, @NonNull String resource) {
         checkValidity(key);
@@ -41,7 +41,7 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      *
      * @param key The key which defines the resource
      * @throws IllegalArgumentException if the argument contains a backslash as its last
-     *                                  character.
+     *                                  character or is null.
      */
     public void removeResource(@NonNull String key) {
         checkValidity(key);
@@ -51,11 +51,11 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
     /**
      * Returns a resource in the dictionary
      *
-     * @param key The key which defines the resource to get
+     * @param key The key which defines the resource to get.
      * @return Returns a resource corresponding to the key if present in the dictionary, else
      * returns null
      * @throws IllegalArgumentException if the argument contains a backslash as its last
-     *                                  character.
+     *                                  character or is null.
      */
     public String getResource(@NonNull String key) {
         checkValidity(key);
@@ -75,7 +75,7 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      * @param key      The key which defines the resource
      * @param resource The resource to add
      * @throws IllegalArgumentException if one of the arguments contains a backslash as its last
-     *                                  character.
+     *                                  character or is null.
      */
     public void addResourceFromSMS(@NonNull String key, @NonNull String resource) {
         addResource(removeEscapes(key), removeEscapes(resource));
@@ -86,7 +86,7 @@ public class SMSNetDictionary implements NetDictionary<String, String> {
      *
      * @param key The key which defines the resource
      * @throws IllegalArgumentException if the argument contains a backslash as its last
-     *                                  character.
+     *                                  character or is null.
      */
     public void removeResourceFromSMS(@NonNull String key) {
         removeResource(removeEscapes(key));

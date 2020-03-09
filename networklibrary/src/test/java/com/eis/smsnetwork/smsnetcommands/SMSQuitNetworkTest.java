@@ -8,10 +8,12 @@ import com.eis.smsnetwork.RequestType;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -24,8 +26,17 @@ import java.util.Set;
 @PrepareForTest({SMSManager.class})
 public class SMSQuitNetworkTest {
 
+    private SMSManager mockManager;
+
     @Captor
     ArgumentCaptor<SMSMessage> messageCaptor;
+
+    @Before
+    public void setUp() {
+        mockManager = Mockito.mock(SMSManager.class);
+        PowerMockito.mockStatic(SMSManager.class);
+        PowerMockito.when(SMSManager.getInstance()).thenReturn(mockManager);
+    }
 
     @Test
     public void quitNetwork() {
@@ -33,7 +44,7 @@ public class SMSQuitNetworkTest {
         SMSPeer peer2 = new SMSPeer("+393408140366");
         SMSJoinableNetManager.getInstance().getNetSubscriberList().addSubscriber(peer1);
         SMSJoinableNetManager.getInstance().getNetSubscriberList().addSubscriber(peer2);
-        // we manually copy peers to this set instead of simply calling SMSJoinableNetManager
+        // we copy peers to this set instead of simply making it point to SMSJoinableNetManager
         // .getInstance().getNetSubscriberList().getSubscribers() because in that case we would
         // get a pointer to the list of subscribers, which is cleared after the execution of
         // SMSQuitNetwork. What we want though is the list of subscribers before the execution of
@@ -42,9 +53,6 @@ public class SMSQuitNetworkTest {
                 new HashSet<>(SMSJoinableNetManager.getInstance().getNetSubscriberList()
                         .getSubscribers());
         String quitNetworkMessage = RequestType.QuitNetwork.asString();
-        SMSManager mockManager = Mockito.mock(SMSManager.class);
-        PowerMockito.mockStatic(SMSManager.class);
-        PowerMockito.when(SMSManager.getInstance()).thenReturn(mockManager);
 
         CommandExecutor.execute(new SMSQuitNetwork());
 
@@ -63,5 +71,14 @@ public class SMSQuitNetworkTest {
             recipients.add(sentMessage.getPeer());
         }
         Assert.assertEquals(subscribers, recipients);
+    }
+
+    @Test
+    public void quitNetworkWithNoSubscribers() {
+        CommandExecutor.execute(new SMSQuitNetwork());
+
+        Assert.assertTrue(SMSJoinableNetManager.getInstance().getNetSubscriberList()
+                .getSubscribers().isEmpty());
+        Mockito.verify(mockManager, Mockito.never()).sendMessage(Matchers.any());
     }
 }
