@@ -199,10 +199,10 @@ public class SMSNetworkManager implements NetworkManager<String, String, SMSPeer
     }
 
     /**
-     * Clears the state of the network
+     * Clears the state of the network.
      */
     public void clear() {
-        this.getNetSubscriberList().getSubscribers().clear();
+        this.getNetSubscriberList().clear();
         this.getNetDictionary().clear();
     }
 }

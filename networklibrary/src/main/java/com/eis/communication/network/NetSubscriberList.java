@@ -29,4 +29,9 @@ public interface NetSubscriberList<T extends Peer> {
      * @param subscriber The subscriber to remove
      */
     void removeSubscriber(T subscriber);
+
+    /**
+     * Removes all subscribers.
+     */
+    void clear();
 }

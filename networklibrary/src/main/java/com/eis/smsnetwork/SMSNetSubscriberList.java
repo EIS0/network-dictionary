@@ -1,6 +1,5 @@
 package com.eis.smsnetwork;
 
-
 import androidx.annotation.NonNull;
 
 import com.eis.communication.network.NetSubscriberList;
@@ -27,15 +26,19 @@ public class SMSNetSubscriberList implements NetSubscriberList<SMSPeer> {
      */
     public void addSubscriber(@NonNull final SMSPeer subscriber) {
         //noinspection ConstantConditions
-        if (subscriber == null) throw new IllegalArgumentException("Cannot add a null peer!");
+        if (subscriber == null)
+            throw new IllegalArgumentException("Cannot add a null peer!");
         subscribers.add(subscriber);
     }
 
     /**
-     * @return Returns the set of all the current subscribers to the net
+     * @return Returns the {@link Set} containing all subscribers. Adding and removing subscribers
+     * to and from this {@link Set} won't change the Set of subscribers contained in instances of
+     * this class. In order to do that you must call methods {@link #addSubscriber(SMSPeer)} and
+     * {@link #removeSubscriber(SMSPeer)}.
      */
     public Set<SMSPeer> getSubscribers() {
-        return subscribers;
+        return new HashSet<>(subscribers);
     }
 
     /**
@@ -46,7 +49,15 @@ public class SMSNetSubscriberList implements NetSubscriberList<SMSPeer> {
      */
     public void removeSubscriber(@NonNull final SMSPeer subscriber) {
         if (!subscribers.contains(subscriber))
-            throw new IllegalArgumentException("The subscriber you're trying to remove is not present!");
+            throw new IllegalArgumentException("The subscriber you're trying to remove is not " +
+                    "present!");
         subscribers.remove(subscriber);
+    }
+
+    /**
+     * Removes all subscribers.
+     */
+    public void clear() {
+        subscribers.clear();
     }
 }
