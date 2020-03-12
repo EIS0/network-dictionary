@@ -13,6 +13,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 /**
@@ -28,6 +30,7 @@ public class SMSAddPeerTest {
 
     @Test
     public void addPeer() {
+        Set<SMSPeer> expectedSubscribers = networkManager.getNetSubscriberList().getSubscribers();
         String expectedMessage = RequestType.AddPeer.asString() + BroadcastReceiver.FIELD_SEPARATOR
                 + peerToAdd.getAddress();
         PowerMockito.mockStatic(BroadcastSender.class);
@@ -36,8 +39,7 @@ public class SMSAddPeerTest {
 
         assertTrue(networkManager.getNetSubscriberList().getSubscribers().contains(peerToAdd));
         PowerMockito.verifyStatic();
-        BroadcastSender.broadcastMessage(networkManager.getNetSubscriberList().getSubscribers(),
-                expectedMessage);
+        BroadcastSender.broadcastMessage(expectedSubscribers, expectedMessage);
     }
 
     @Test(expected = IllegalArgumentException.class)

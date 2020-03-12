@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements InviteListener<SM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editText = (EditText) findViewById(R.id.phone_input);
+        editText = findViewById(R.id.phone_input);
         subsList = findViewById(R.id.listView);
 
         ActivityCompat.requestPermissions(this, PERMISSIONS, 1);

@@ -55,6 +55,13 @@ public class SMSNetSubscriberList implements NetSubscriberList<SMSPeer> {
     }
 
     /**
+     * @return {@code true} if there are no subscribers.
+     */
+    public boolean isEmpty() {
+        return subscribers.isEmpty();
+    }
+
+    /**
      * Removes all subscribers.
      */
     public void clear() {

@@ -2,6 +2,7 @@ package com.eis.smsnetwork.broadcast;
 
 import android.util.Log;
 
+import com.eis.communication.network.NetSubscriberList;
 import com.eis.communication.network.commands.CommandExecutor;
 import com.eis.smslibrary.SMSManager;
 import com.eis.smsnetwork.RequestType;
@@ -9,10 +10,8 @@ import com.eis.smsnetwork.SMSInvitation;
 import com.eis.smsnetwork.SMSJoinableNetManager;
 import com.eis.smslibrary.SMSMessage;
 import com.eis.smslibrary.SMSPeer;
-import com.eis.smslibrary.exceptions.InvalidTelephoneNumberException;
 import com.eis.smslibrary.listeners.SMSReceivedServiceListener;
 import com.eis.smsnetwork.SMSNetDictionary;
-import com.eis.smsnetwork.SMSNetSubscriberList;
 import com.eis.smsnetwork.smsnetcommands.SMSAddPeer;
 
 import java.util.Set;
@@ -63,8 +62,7 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
         }
         SMSPeer sender = message.getPeer();
         if (sender.getInvalidityReason() != null) return;
-        SMSNetSubscriberList subscribers =
-                (SMSNetSubscriberList) SMSJoinableNetManager.getInstance().getNetSubscriberList();
+        NetSubscriberList<SMSPeer> subscribers = SMSJoinableNetManager.getInstance().getNetSubscriberList();
         SMSNetDictionary dictionary =
                 (SMSNetDictionary) SMSJoinableNetManager.getInstance().getNetDictionary();
         boolean senderIsNotSubscriber = !subscribers.getSubscribers().contains(sender);
@@ -96,23 +94,25 @@ public class BroadcastReceiver extends SMSReceivedServiceListener {
                 invitedPeers.remove(sender);
 
                 // Sending to the invited peer my subscribers list
-                StringBuilder mySubscribers =
-                        new StringBuilder(RequestType.AddPeer.asString() + FIELD_SEPARATOR);
-                for (SMSPeer peerToAdd : subscribers.getSubscribers())
-                    mySubscribers.append(peerToAdd).append(FIELD_SEPARATOR);
-                SMSMessage mySubscribersMessage = new SMSMessage(
-                        // we remove the last character in mySubscribers because it's a
-                        // FIELD_SEPARATOR, and there's no need for it since there can't be any
-                        // more fields after the last character of the message
-                        sender, mySubscribers.deleteCharAt(mySubscribers.length() - 1).toString());
-                SMSManager.getInstance().sendMessage(mySubscribersMessage);
+                if (!subscribers.isEmpty()) {
+                    StringBuilder mySubscribers = new StringBuilder(RequestType.AddPeer.asString() + FIELD_SEPARATOR);
+                    for (SMSPeer peerToAdd : subscribers.getSubscribers())
+                        mySubscribers.append(peerToAdd).append(FIELD_SEPARATOR);
+                    SMSMessage mySubscribersMessage = new SMSMessage(
+                            // we remove the last character in mySubscribers because it's a
+                            // FIELD_SEPARATOR, and there's no need for it since there can't be any
+                            // more fields after the last character of the message
+                            sender, mySubscribers.deleteCharAt(mySubscribers.length() - 1).toString());
+                    SMSManager.getInstance().sendMessage(mySubscribersMessage);
+                }
 
                 // Sending my dictionary to the invited peer
-                String myDictionary =
-                        RequestType.AddResource.asString() + FIELD_SEPARATOR +
-                                dictionary.getAllKeyResourcePairsForSMS();
-                SMSMessage myDictionaryMessage = new SMSMessage(sender, myDictionary);
-                SMSManager.getInstance().sendMessage(myDictionaryMessage);
+                String keyResourcePairs = dictionary.getAllKeyResourcePairsForSMS();
+                if (keyResourcePairs != null) {
+                    String myDictionary = RequestType.AddResource.asString() + FIELD_SEPARATOR + keyResourcePairs;
+                    SMSMessage myDictionaryMessage = new SMSMessage(sender, myDictionary);
+                    SMSManager.getInstance().sendMessage(myDictionaryMessage);
+                }
 
                 // Broadcasting to the previous subscribers the new subscriber
                 CommandExecutor.execute(new SMSAddPeer(sender));
